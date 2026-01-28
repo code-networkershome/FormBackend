@@ -38,7 +38,10 @@ export default function LibraryPage() {
         return matchesSearch && matchesCategory;
     });
 
-    const copyToClipboard = (id: string, text: string) => {
+    const placeholderEndpoint = "https://formvibe.com/api/v1/f/YOUR_FORM_ID";
+
+    const copyToClipboard = (id: string, htmlFn: (endpoint: string) => string) => {
+        const text = htmlFn(placeholderEndpoint);
         navigator.clipboard.writeText(text);
         setCopiedId(id);
         setTimeout(() => setCopiedId(null), 2000);
@@ -144,7 +147,7 @@ export default function LibraryPage() {
                                             </div>
                                             <div className="rounded-xl bg-slate-900 p-4 overflow-hidden max-h-48 relative">
                                                 <pre className="text-[11px] font-mono text-slate-300 leading-relaxed overflow-x-auto">
-                                                    <code>{t.html}</code>
+                                                    <code>{t.html(placeholderEndpoint)}</code>
                                                 </pre>
                                                 <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-900 to-transparent" />
                                             </div>
