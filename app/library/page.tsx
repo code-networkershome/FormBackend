@@ -40,8 +40,7 @@ export default function LibraryPage() {
 
     const placeholderEndpoint = "https://formvibe.com/api/v1/f/YOUR_FORM_ID";
 
-    const copyToClipboard = (id: string, htmlFn: (endpoint: string) => string) => {
-        const text = htmlFn(placeholderEndpoint);
+    const copyToClipboard = (id: string, text: string) => {
         navigator.clipboard.writeText(text);
         setCopiedId(id);
         setTimeout(() => setCopiedId(null), 2000);
@@ -136,7 +135,7 @@ export default function LibraryPage() {
                                                     size="sm"
                                                     variant="secondary"
                                                     className="h-8 gap-2 bg-white/90 backdrop-blur-sm"
-                                                    onClick={() => copyToClipboard(t.id, t.html)}
+                                                    onClick={() => copyToClipboard(t.id, t.html(placeholderEndpoint))}
                                                 >
                                                     {copiedId === t.id ? (
                                                         <><Check className="h-3 w-3 text-emerald-600" /> Copied</>
