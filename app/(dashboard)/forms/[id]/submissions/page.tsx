@@ -48,9 +48,9 @@ export default function SubmissionsPage() {
         if (!data?.data) return;
 
         // Flatten the submissions for CSV
-        const headers = ["ID", "Status", "Created At", ...new Set(data.data.flatMap((s: any) => Object.keys(s.payload)))];
+        const headers = ["ID", "Status", "Created At", ...new Set(data.data.flatMap((s: any) => Object.keys(s.payload)))] as string[];
         const rows = data.data.map((sub: any) => {
-            const row: any = {
+            const row: Record<string, any> = {
                 ID: sub.id,
                 Status: sub.status,
                 "Created At": new Date(sub.createdAt).toLocaleString(),
