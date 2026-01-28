@@ -56,7 +56,7 @@ export default function SubmissionsPage() {
                 "Created At": new Date(sub.createdAt).toLocaleString(),
                 ...sub.payload
             };
-            return headers.map(header => `"${(row[header] || "").toString().replace(/"/g, '""')}"`).join(",");
+            return headers.map((header: string) => `"${(row[header] || "").toString().replace(/"/g, '""')}"`).join(",");
         });
 
         const csvContent = [headers.join(","), ...rows].join("\n");
