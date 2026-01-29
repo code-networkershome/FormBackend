@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimit } from "@/lib/spam/ratelimit";
+import { db } from "@/lib/db";
+import { forms } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export const runtime = "edge";
 
@@ -34,7 +37,17 @@ export async function POST(
         );
     }
 
-    // 3. Status Check (Fail Fast)
+    // 3. Fetch Form Status (Fail Fast)
+    const [form] = await db
+        .select({ status: forms.status })
+        .from(forms)
+        .where(eq(forms.id, formId))
+        .limit(1);
+
+    if (!form) {
+        return NextResponse.json({ error: "Form not found" }, { status: 404 });
+    }
+
     if (form.status === "revoked") {
         return NextResponse.json(
             {
