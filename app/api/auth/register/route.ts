@@ -68,7 +68,8 @@ export async function POST(req: Request) {
             emailVerified: "false",
         });
 
-        const verificationLink = `${process.env.NEXTAUTH_URL}/api/auth/verify?userId=${userId}`;
+        const baseUrl = process.env.NEXTAUTH_URL || `https://${req.headers.get("host")}`;
+        const verificationLink = `${baseUrl}/api/auth/verify?userId=${userId}`;
 
         return NextResponse.json({
             message: `Account created successfully! For testing, verify here: ${verificationLink}`,
