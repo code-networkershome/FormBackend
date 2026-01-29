@@ -32,8 +32,8 @@ export default function LibraryPage() {
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const filtered = TEMPLATES.filter(t => {
-        const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase()) ||
-            t.desc.toLowerCase().includes(search.toLowerCase());
+        const matchesSearch = t.display_name.toLowerCase().includes(search.toLowerCase()) ||
+            t.description.toLowerCase().includes(search.toLowerCase());
         const matchesCategory = activeCategory === "All" || t.category === activeCategory;
         return matchesSearch && matchesCategory;
     });
@@ -123,11 +123,11 @@ export default function LibraryPage() {
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-full">{t.category}</span>
                                             </div>
-                                            <CardTitle className="text-xl font-bold text-slate-900">{t.title}</CardTitle>
+                                            <CardTitle className="text-xl font-bold text-slate-900">{t.display_name}</CardTitle>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
-                                        <p className="text-sm text-slate-600 leading-relaxed">{t.desc}</p>
+                                        <p className="text-sm text-slate-600 leading-relaxed">{t.description}</p>
 
                                         <div className="relative group/code">
                                             <div className="absolute right-2 top-2 z-10 opacity-0 group-hover/code:opacity-100 transition-opacity">
@@ -135,7 +135,7 @@ export default function LibraryPage() {
                                                     size="sm"
                                                     variant="secondary"
                                                     className="h-8 gap-2 bg-white/90 backdrop-blur-sm"
-                                                    onClick={() => copyToClipboard(t.id, t.html(placeholderEndpoint))}
+                                                    onClick={() => copyToClipboard(t.id, t.example_html.replace(/\{\{ENDPOINT\}\}/g, placeholderEndpoint))}
                                                 >
                                                     {copiedId === t.id ? (
                                                         <><Check className="h-3 w-3 text-emerald-600" /> Copied</>
@@ -146,13 +146,13 @@ export default function LibraryPage() {
                                             </div>
                                             <div className="rounded-xl bg-slate-900 p-4 overflow-hidden max-h-48 relative">
                                                 <pre className="text-[11px] font-mono text-slate-300 leading-relaxed overflow-x-auto">
-                                                    <code>{t.html(placeholderEndpoint)}</code>
+                                                    <code>{t.example_html.replace(/\{\{ENDPOINT\}\}/g, placeholderEndpoint)}</code>
                                                 </pre>
                                                 <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-900 to-transparent" />
                                             </div>
                                         </div>
 
-                                        <Button className="w-full bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-200" onClick={() => copyToClipboard(t.id, t.html("https://formvibe.com/api/f/YOUR_ID"))}>
+                                        <Button className="w-full bg-slate-50 text-slate-900 hover:bg-slate-100 border border-slate-200" onClick={() => copyToClipboard(t.id, t.example_html.replace(/\{\{ENDPOINT\}\}/g, "https://formvibe.com/api/f/YOUR_ID"))}>
                                             Copy Full Code
                                         </Button>
                                     </CardContent>

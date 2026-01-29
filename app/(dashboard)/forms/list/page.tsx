@@ -281,7 +281,7 @@ export default function FormsListPage() {
                                                     <div className="h-8 w-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
                                                         <t.icon className="h-4 w-4" />
                                                     </div>
-                                                    {t.title.split(' ')[0]}
+                                                    {t.display_name.split(' ')[0]}
                                                 </button>
                                             ))}
                                         </div>
