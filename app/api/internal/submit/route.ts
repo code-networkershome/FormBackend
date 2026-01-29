@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
             ...metadata,
             test_mode: form.status === "test_mode",
             subject_override: specialFields._subject || null,
-            reply_to: specialFields._replyto || null,
+            reply_to: specialFields._replyto || sanitizedPayload.email || sanitizedPayload.Email || null,
         };
 
         await db.insert(submissions).values({
