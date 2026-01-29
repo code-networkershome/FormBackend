@@ -19,10 +19,16 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
+import { Loader2, Globe, Laptop, Shield } from "lucide-react";
 
 export default function SubmissionsPage() {
     const params = useParams();
@@ -30,18 +36,52 @@ export default function SubmissionsPage() {
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [cursor, setCursor] = useState<string | null>(null);
 
+    // Submission Detail View State
+    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [detailData, setDetailData] = useState<any>(null);
+    const [isDetailLoading, setIsDetailLoading] = useState(false);
+    const [detailError, setDetailError] = useState<string | null>(null);
+
     const queryUrl = `/api/v1/forms/${formId}/submissions?limit=20${statusFilter ? `&status=${statusFilter}` : ""}${cursor ? `&cursor=${cursor}` : ""}`;
     const { data, error, mutate } = useSWR(queryUrl, fetcher);
 
     const isLoading = !data && !error;
 
     const updateStatus = async (submissionId: string, newStatus: string) => {
-        await fetch(`/api/v1/forms/${formId}/submissions`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ submissionIds: [submissionId], status: newStatus }),
-        });
-        mutate();
+        try {
+            await fetch(`/api/v1/submissions/${submissionId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            mutate();
+        } catch (err) {
+            console.error("Failed to update status:", err);
+        }
+    };
+
+    const handleOpenDetail = async (id: string, currentStatus: string) => {
+        setSelectedId(id);
+        setIsDetailLoading(true);
+        setDetailError(null);
+        setDetailData(null);
+
+        try {
+            // 1. Fetch First
+            const response = await fetch(`/api/v1/submissions/${id}`);
+            if (!response.ok) throw new Error("Failed to load submission details");
+            const data = await response.json();
+            setDetailData(data);
+
+            // 2. Mark as read in background if unread
+            if (currentStatus === "unread") {
+                updateStatus(id, "read");
+            }
+        } catch (err: any) {
+            setDetailError(err.message);
+        } finally {
+            setIsDetailLoading(false);
+        }
     };
 
     const handleExportCSV = () => {
@@ -134,7 +174,8 @@ export default function SubmissionsPage() {
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
-                                            className="group hover:bg-blue-50/30 transition-colors"
+                                            className="group hover:bg-blue-50/30 transition-colors cursor-pointer"
+                                            onClick={() => handleOpenDetail(sub.id, sub.status)}
                                         >
                                             <td className="px-6 py-4">
                                                 <span className={cn(
@@ -147,15 +188,20 @@ export default function SubmissionsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="max-w-xs truncate text-sm text-slate-700">
+                                                <div className="max-w-sm truncate text-sm text-slate-700 font-medium">
                                                     {Object.entries(sub.payload).map(([k, v]) => `${k}: ${v}`).join(", ")}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
-                                                {new Date(sub.createdAt).toLocaleDateString()}
+                                                {new Date(sub.createdAt).toLocaleString(undefined, {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                                                     {sub.status === "unread" && (
                                                         <Button variant="ghost" size="icon" onClick={() => updateStatus(sub.id, "read")} className="text-blue-600 hover:bg-blue-50">
                                                             <MailOpen className="h-4 w-4" />
@@ -207,6 +253,93 @@ export default function SubmissionsPage() {
                     </div>
                 </div>
             </Card>
+
+            <Dialog open={!!selectedId} onOpenChange={(open) => !open && setSelectedId(null)}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center justify-between pr-8">
+                            <span>Submission Details</span>
+                            {detailData && (
+                                <span className={cn(
+                                    "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
+                                    detailData.status === "unread" ? "bg-blue-50 text-blue-600" :
+                                        detailData.status === "read" ? "bg-slate-100 text-slate-500" :
+                                            "bg-amber-50 text-amber-600"
+                                )}>
+                                    {detailData.status}
+                                </span>
+                            )}
+                        </DialogTitle>
+                        <DialogDescription>
+                            Received on {detailData ? new Date(detailData.createdAt).toLocaleString() : "..."}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {isDetailLoading ? (
+                        <div className="h-64 flex flex-col items-center justify-center gap-4 text-muted-foreground">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            <p className="text-sm font-medium">Fetching submission data...</p>
+                        </div>
+                    ) : detailError ? (
+                        <div className="h-64 flex flex-col items-center justify-center gap-4 text-destructive bg-destructive/5 rounded-xl border border-destructive/10">
+                            <AlertCircle className="h-8 w-8" />
+                            <p className="text-sm font-bold">{detailError}</p>
+                            <Button variant="outline" size="sm" onClick={() => selectedId && handleOpenDetail(selectedId, "unknown")}>
+                                Try Again
+                            </Button>
+                        </div>
+                    ) : detailData && (
+                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            {/* Payload Section */}
+                            <div className="space-y-4">
+                                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                    <Shield className="h-3.5 w-3.5" /> Form Content
+                                </h4>
+                                <div className="grid gap-3">
+                                    {Object.entries(detailData.payload).map(([key, value]: [string, any]) => (
+                                        <div key={key} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{key}</p>
+                                            <p className="text-sm text-slate-900 leading-relaxed font-medium">
+                                                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Metadata Section */}
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                    <Globe className="h-3.5 w-3.5" /> Technical Metadata
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">IP Address</p>
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <Shield className="h-3.5 w-3.5 text-slate-300" />
+                                            {detailData.metadata?.ip || "Not recorded"}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Location</p>
+                                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                                            <Globe className="h-3.5 w-3.5 text-slate-300" />
+                                            {detailData.metadata?.geo || "Unknown"}
+                                        </div>
+                                    </div>
+                                    <div className="col-span-2 space-y-1">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase">User Agent</p>
+                                        <div className="flex items-start gap-2 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100/50">
+                                            <Laptop className="h-3.5 w-3.5 text-slate-300 mt-0.5 shrink-0" />
+                                            {detailData.metadata?.ua || "Not available"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
