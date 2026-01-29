@@ -60,6 +60,15 @@ export const verificationTokens = pgTable("verificationToken", {
     primaryKey({ columns: [table.identifier, table.token] }),
 ]);
 
+// User Credentials (for Email/Password Auth)
+export const userCredentials = pgTable("user_credentials", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    passwordHash: text("password_hash").notNull(),
+    emailVerified: text("email_verified").default("false").notNull(), // "true" or "false"
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Forms
 export const forms = pgTable("forms", {
     id: uuid("id").primaryKey().defaultRandom(),

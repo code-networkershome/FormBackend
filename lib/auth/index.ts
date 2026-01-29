@@ -3,7 +3,8 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
-import { accounts, sessions, users, verificationTokens } from "@/lib/db/schema";
+import bcrypt from "bcryptjs";
+import { accounts, sessions, users, verificationTokens, userCredentials } from "@/lib/db/schema";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: DrizzleAdapter(db, {
@@ -18,31 +19,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientSecret: process.env.GITHUB_SECRET,
         }),
         Credentials({
-            name: "Guest Access",
+            name: "Credentials",
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                // HARDCODED BYPASS FOR LOCAL MVP TESTING
-                if (credentials?.email === "guest@vibe.com" && credentials?.password === "guest123") {
-                    const guestUser = {
-                        id: "00000000-0000-0000-0000-000000000000",
-                        name: "Guest User",
-                        email: "guest@vibe.com"
-                    };
+                if (!credentials?.email || !credentials?.password) return null;
 
-                    // Ensure guest user exists in DB to satisfy FK constraints
-                    try {
-                        const { users } = await import("@/lib/db/schema");
-                        await db.insert(users).values(guestUser).onConflictDoNothing();
-                    } catch (e) {
-                        console.error("Failed to ensure guest user exists:", e);
-                    }
+                const { userCredentials, users } = await import("@/lib/db/schema");
+                const { eq } = await import("drizzle-orm");
 
-                    return guestUser;
+                // 1. Fetch user by email
+                const user = await db.query.users.findFirst({
+                    where: eq(users.email, credentials.email as string)
+                });
+
+                if (!user) return null;
+
+                // 2. Fetch credentials
+                const creds = await db.query.userCredentials.findFirst({
+                    where: eq(userCredentials.userId, user.id)
+                });
+
+                if (!creds || !creds.passwordHash) return null;
+
+                // 3. Verify Password
+                const isValid = await bcrypt.compare(credentials.password as string, creds.passwordHash);
+                if (!isValid) return null;
+
+                // 4. Check Verification
+                if (creds.emailVerified !== "true") {
+                    throw new Error("EMAIL_NOT_VERIFIED");
                 }
-                return null;
+
+                return user;
             }
         })
     ],
