@@ -4,7 +4,7 @@ import { forms, submissions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
-    // 1. Secret Protection (Verified in Proxy/Middleware but double check here)
+    // 1. Secret Protection
     const secret = req.headers.get("x-vibe-secret");
     if (secret !== process.env.INTERNAL_API_SECRET) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,33 +24,49 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Form not found" }, { status: 404 });
         }
 
+        // 3. Status Handling (CRITICAL: No persistence if paused)
         if (form.status === "paused") {
-            return NextResponse.json({ error: "Form is currently paused" }, { status: 403 });
+            return NextResponse.json({
+                error: "This form is currently paused and not accepting submissions."
+            }, { status: 403 });
         }
 
-        // 3. Determine Submission Status
-        // If form is in test_mode, we might want to flag the submission specially
-        const submissionStatus = form.status === "test_mode" ? "unread" : "unread";
-        // Metadata can also store if it was test mode
+        // 4. Payload Intelligence (Special Fields)
+        const specialFields: Record<string, any> = {};
+        const sanitizedPayload: Record<string, any> = {};
+
+        // Extract underscore fields
+        Object.keys(payload).forEach(key => {
+            if (key.startsWith("_")) {
+                specialFields[key] = payload[key];
+            } else {
+                sanitizedPayload[key] = payload[key];
+            }
+        });
+
+        // 5. Determine Redirect
+        // Order of precedence: _next field > form settings > null
+        const redirectUrl = specialFields._next || form.settings?.success_url || null;
+
+        // 6. Save Submission (Persistence)
         const enrichedMetadata = {
             ...metadata,
             test_mode: form.status === "test_mode",
+            subject_override: specialFields._subject || null,
+            reply_to: specialFields._replyto || null,
         };
 
-        // 4. Save Submission
         await db.insert(submissions).values({
             formId: form.id,
-            payload,
+            payload: sanitizedPayload,
             metadata: enrichedMetadata,
-            status: submissionStatus,
+            status: "unread", // Default to unread for new submissions
         });
 
-        // 5. Build Response
-        const successUrl = form.settings?.success_url;
-
+        // 7. Build Response
         return NextResponse.json({
             success: true,
-            redirectUrl: successUrl || null
+            redirectUrl: redirectUrl
         });
 
     } catch (error) {
