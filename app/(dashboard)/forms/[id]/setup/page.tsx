@@ -9,7 +9,7 @@ import { Terminal, Code2, Globe, CheckCircle2, ChevronRight, Copy, ArrowRight } 
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
-import { TEMPLATES } from "@/lib/constants";
+import { TEMPLATES, getTemplateById } from "@/lib/constants";
 
 export default function SetupPage() {
     const params = useParams();
