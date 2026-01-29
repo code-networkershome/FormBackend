@@ -11,11 +11,17 @@ export async function DELETE(
     const session = await auth();
     const { id } = await params;
 
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id as string;
+
     const result = await db
         .delete(apiKeys)
         .where(and(
             eq(apiKeys.id, id),
-            eq(apiKeys.userId, session.user.id)
+            eq(apiKeys.userId, userId)
         ))
         .returning();
 

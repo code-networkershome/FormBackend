@@ -11,6 +11,8 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id as string;
+
     const keys = await db
         .select({
             id: apiKeys.id,
@@ -20,7 +22,7 @@ export async function GET() {
             createdAt: apiKeys.createdAt,
         })
         .from(apiKeys)
-        .where(eq(apiKeys.userId, session.user.id));
+        .where(eq(apiKeys.userId, userId));
 
     // Obfuscate the keys: return only the last 4 chars if possible, or a placeholder
     const safeKeys = keys.map(k => ({
@@ -40,7 +42,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id as string;
     const { name } = await req.json();
+
     if (!name) {
         return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
@@ -49,7 +53,7 @@ export async function POST(req: Request) {
     const hashedKey = await hashKey(rawKey);
 
     const [newKey] = await db.insert(apiKeys).values({
-        userId: session.user.id,
+        userId: userId,
         keyHash: hashedKey,
         name: name,
     }).returning();

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { webhooks, forms } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
@@ -11,16 +11,25 @@ export async function DELETE(
     const session = await auth();
     const { id: formId, webhookId } = await params;
 
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id as string;
+
     const result = await db
         .delete(webhooks)
         .where(and(
             eq(webhooks.id, webhookId),
-            eq(webhooks.formId, formId)
+            eq(webhooks.formId, formId),
+            // Ensure ownerId of the form matches the session user
+            inArray(
+                webhooks.formId,
+                db.select({ id: forms.id })
+                    .from(forms)
+                    .where(eq(forms.ownerId, userId))
+            )
         ))
-        // We ensure ownership by checking if the form belongs to the user
-        // This is safe because only the form owner could have created the webhook in the first place,
-        // but we'll double check by joining if we want to be 100% airtight.
-        // Actually, deleting from webhooks filtered by formId + checking form ownership is the pattern.
         .returning();
 
     // Safety check: verify ownership of the formId before truly concluding success

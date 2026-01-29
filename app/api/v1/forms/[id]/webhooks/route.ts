@@ -12,6 +12,12 @@ export async function GET(
     const session = await auth();
     const { id } = await params;
 
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id as string;
+
     const results = await db
         .select({
             id: webhooks.id,
@@ -23,7 +29,7 @@ export async function GET(
         .innerJoin(forms, eq(webhooks.formId, forms.id))
         .where(and(
             eq(webhooks.formId, id),
-            eq(forms.ownerId, session.user.id)
+            eq(forms.ownerId, userId)
         ));
 
     return NextResponse.json(results);
@@ -35,6 +41,12 @@ export async function POST(
 ) {
     const session = await auth();
     const { id } = await params;
+
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id as string;
     const { url } = await req.json();
 
     if (!url) {
@@ -47,7 +59,7 @@ export async function POST(
         .from(forms)
         .where(and(
             eq(forms.id, id),
-            eq(forms.ownerId, session.user.id)
+            eq(forms.ownerId, userId)
         ))
         .limit(1);
 
