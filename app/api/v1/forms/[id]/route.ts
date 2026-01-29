@@ -54,6 +54,8 @@ export async function PATCH(
         const body = await req.json();
         const { name, status, settings } = body;
 
+        console.log(`[Form Update] id=${id} status=${status} settings=${JSON.stringify(settings)}`);
+
         const [updatedForm] = await db
             .update(forms)
             .set({

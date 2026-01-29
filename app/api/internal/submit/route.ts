@@ -54,11 +54,12 @@ export async function POST(req: NextRequest) {
         });
 
         // 5. Determine Redirect
-        // Order of precedence: _next field > form settings (snake or camel) > null
+        // Dashboard settings take priority to allow easy configuration without code changes.
         const settings = (form.settings || {}) as any;
-        const redirectUrl = specialFields._next || settings.success_url || settings.successUrl || null;
+        const configUrl = settings.success_url || settings.successUrl;
+        const redirectUrl = (configUrl && configUrl.trim() !== "") ? configUrl : (specialFields._next || null);
 
-        console.log(`[Internal] id=${formId} settings=${JSON.stringify(settings)} next=${specialFields._next} final=${redirectUrl}`);
+        console.log(`[Internal] id=${formId} dashboard=${configUrl} underscoreNext=${specialFields._next} final=${redirectUrl}`);
 
         // 6. Save Submission (Persistence)
         const enrichedMetadata = {
