@@ -59,8 +59,6 @@ export async function POST(req: NextRequest) {
         const configUrl = settings.success_url || settings.successUrl;
         const redirectUrl = (configUrl && configUrl.trim() !== "") ? configUrl : (specialFields._next || null);
 
-        console.log(`[Internal] id=${formId} dashboard=${configUrl} underscoreNext=${specialFields._next} final=${redirectUrl}`);
-
         // 6. Save Submission (Persistence)
         const enrichedMetadata = {
             ...metadata,

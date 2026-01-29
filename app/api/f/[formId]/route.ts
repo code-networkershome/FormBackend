@@ -146,8 +146,6 @@ export async function POST(
         const result = await internalResponse.json();
         const finalRedirect = result.redirectUrl || `${origin}/thanks`;
 
-        console.log(`[Submission] id=${formId} ajax=${isAjax} redirect=${finalRedirect} result=${JSON.stringify(result)}`);
-
         // 9. Handle Redirection vs AJAX Response
         if (isAjax) {
             return NextResponse.json({
