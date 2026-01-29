@@ -172,22 +172,12 @@ function SampleForm() {
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="text-sm text-slate-500 flex items-center gap-2">
                                             <div className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                                            {template ? `Using template: ${template.title}` : "Copy this code into any HTML file. Supports _next, _subject, and _replyto fields."}
+                                            {template ? `Using template: ${template.display_name}` : "Copy this code into any HTML file. Supports _next, _subject, and _replyto fields."}
                                         </div>
                                     </div>
                                     {form ? (
                                         <CodeBlock
-                                            code={template ? template.html(endpointUrl) : `<form action="${endpointUrl}" method="POST">
-  <!-- Required for identifier -->
-  <input type="email" name="email" required placeholder="User Email" />
-  <textarea name="message" required placeholder="Your Message"></textarea>
-
-  <!-- Optional Configuration -->
-  <input type="hidden" name="_next" value="https://yourwebsite.com/thanks" />
-  <input type="hidden" name="_subject" value="New Submission from Website" />
-  
-  <button type="submit">Send</button>
-</form>`}
+                                            code={htmlCode}
                                             language="html"
                                         />
                                     ) : (
@@ -213,21 +203,7 @@ function SampleForm() {
                                         AJAX submissions automatically return JSON responses.
                                     </div>
                                     <CodeBlock
-                                        code={`fetch("${endpointUrl}", {
-  method: "POST",
-  headers: { 
-    "Content-Type": "application/json",
-    "Accept": "application/json" 
-  },
-  body: JSON.stringify({ 
-    email: "user@example.com", 
-    message: "Hello!",
-    _subject: "Custom AJAX Subject"
-  })
-})
-.then(res => res.json())
-.then(data => console.log(data))
-.catch(err => console.error(err));`}
+                                        code={fetchCode}
                                         language="javascript"
                                     />
                                 </div>
