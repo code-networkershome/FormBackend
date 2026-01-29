@@ -54,8 +54,11 @@ export async function POST(req: NextRequest) {
         });
 
         // 5. Determine Redirect
-        // Order of precedence: _next field > form settings > null
-        const redirectUrl = specialFields._next || form.settings?.success_url || null;
+        // Order of precedence: _next field > form settings (snake or camel) > null
+        const settings = (form.settings || {}) as any;
+        const redirectUrl = specialFields._next || settings.success_url || settings.successUrl || null;
+
+        console.log(`[Internal] id=${formId} settings=${JSON.stringify(settings)} next=${specialFields._next} final=${redirectUrl}`);
 
         // 6. Save Submission (Persistence)
         const enrichedMetadata = {
