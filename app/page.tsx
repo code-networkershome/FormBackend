@@ -152,9 +152,14 @@ export default function LandingPage() {
                   className="flex items-center justify-center lg:justify-start gap-6 text-slate-400"
                 >
                   <div className="flex -space-x-3">
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className="h-10 w-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center font-bold text-xs text-slate-600">
-                        {String.fromCharCode(64 + i)}
+                    {[
+                      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100&h=100",
+                      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100&h=100",
+                      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100&h=100",
+                      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100&h=100"
+                    ].map((src, i) => (
+                      <div key={i} className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-slate-100 flex items-center justify-center">
+                        <img src={src} alt="Developer" className="h-full w-full object-cover" />
                       </div>
                     ))}
                   </div>
@@ -186,10 +191,10 @@ export default function LandingPage() {
                     {/* Submissions List Feed */}
                     <div className="flex-1 p-4 space-y-3">
                       {[
-                        { name: "Sarah Chen", email: "sarah@design.co", status: "unread", time: "2m ago" },
-                        { name: "Marcus Aurelius", email: "marcus@rome.gov", status: "read", time: "15m ago" },
-                        { name: "Jane Doe", email: "jane@startup.io", status: "spam", time: "1h ago" },
-                        { name: "Arjun Mehta", email: "arjun@dev.in", status: "unread", time: "3h ago" }
+                        { name: "Sarah Chen", email: "sarah@design.co", status: "unread", time: "2m ago", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=50&h=50" },
+                        { name: "Marcus Aurelius", email: "marcus@rome.gov", status: "read", time: "15m ago", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=50&h=50" },
+                        { name: "Jane Doe", email: "jane@startup.io", status: "spam", time: "1h ago", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=50&h=50" },
+                        { name: "Arjun Mehta", email: "arjun@dev.in", status: "unread", time: "3h ago", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=50&h=50" }
                       ].map((sub, i) => (
                         <motion.div
                           key={i}
@@ -199,8 +204,8 @@ export default function LandingPage() {
                           className="flex items-center justify-between p-3 rounded-xl border border-slate-50 hover:bg-slate-50 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-[10px]">
-                              {sub.name[0]}
+                            <div className="h-8 w-8 rounded-full border border-slate-100 overflow-hidden bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-[10px]">
+                              <img src={sub.image} alt={sub.name} className="h-full w-full object-cover" />
                             </div>
                             <div className="space-y-0.5 text-left">
                               <p className="text-xs font-bold text-slate-900">{sub.name}</p>
