@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { forms, submissions } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { forms, submissions, webhooks as webhooksTable } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
+import { triggerWebhooks } from "@/lib/webhooks/delivery";
 
 export async function POST(req: NextRequest) {
     // 1. Secret Protection
@@ -67,14 +68,42 @@ export async function POST(req: NextRequest) {
             reply_to: specialFields._replyto || sanitizedPayload.email || sanitizedPayload.Email || null,
         };
 
-        await db.insert(submissions).values({
+        const [newSubmission] = await db.insert(submissions).values({
             formId: form.id,
             payload: sanitizedPayload,
             metadata: enrichedMetadata,
             status: "unread", // Default to unread for new submissions
-        });
+        }).returning();
 
-        // 7. Build Response
+        // 7. Trigger Webhooks ⚡ (Non-blocking)
+        try {
+            const activeWebhooks = await db
+                .select({ url: webhooksTable.url, secret: webhooksTable.secret })
+                .from(webhooksTable)
+                .where(and(
+                    eq(webhooksTable.formId, form.id),
+                    eq(webhooksTable.status, "active")
+                ));
+
+            if (activeWebhooks.length > 0) {
+                // We fire and forget to ensure the response to the user is immediate
+                triggerWebhooks(activeWebhooks, {
+                    event: "submission.created",
+                    formId: form.id,
+                    submission: {
+                        id: newSubmission.id,
+                        payload: sanitizedPayload,
+                        metadata: enrichedMetadata,
+                        createdAt: newSubmission.createdAt.toISOString(),
+                    }
+                }).catch(err => console.error("[Webhook Trigger Error]:", err));
+            }
+        } catch (webhookErr) {
+            // Log but don't fail the submission
+            console.error("[Webhook Discovery Error]:", webhookErr);
+        }
+
+        // 8. Build Response
         return NextResponse.json({
             success: true,
             redirectUrl: redirectUrl

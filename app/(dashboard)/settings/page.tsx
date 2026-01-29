@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { ShieldCheck, Mail, Database } from "lucide-react";
 import { redirect } from "next/navigation";
+import { ApiKeyManager } from "@/components/dashboard/api-key-manager";
 
 export default async function GlobalSettingsPage() {
     const session = await auth();
@@ -72,22 +73,13 @@ export default async function GlobalSettingsPage() {
                 </Card>
 
                 {/* API & Developer Section */}
-                <Card className="bg-white border-slate-100 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-slate-900">Developer Settings</CardTitle>
-                        <CardDescription>Advanced tools for platform integration.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/30 p-8 text-center" id="dev-roadmap">
-                            <p className="text-sm text-slate-500 mb-4">
-                                Developer API keys and Webhook management are coming soon in the next major update.
-                            </p>
-                            <div className="inline-flex items-center rounded-full bg-blue-100 px-4 py-1.5 text-xs font-medium text-blue-700">
-                                Phase 8 Roadmap
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <div id="developer">
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-slate-900">Developer Settings</h2>
+                        <p className="text-slate-500">Advanced tools for platform integration and automation.</p>
+                    </div>
+                    <ApiKeyManager />
+                </div>
             </div>
         </div>
     );

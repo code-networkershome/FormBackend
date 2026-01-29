@@ -6,7 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { Save, Trash2, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Save, Trash2, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
+import { WebhookManager } from "@/components/dashboard/webhook-manager";
 
 export default function SettingsPage() {
     const params = useParams();
@@ -164,6 +165,18 @@ export default function SettingsPage() {
                         </Button>
                     </CardFooter>
                 </Card>
+
+                {/* Automation & Webhooks Section */}
+                <div id="webhooks">
+                    <div className="mb-4">
+                        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <Zap className="h-5 w-5 text-amber-500 fill-amber-500" />
+                            Automation & Webhooks
+                        </h3>
+                        <p className="text-sm text-slate-500">Connect FormVibe to your internal apps and third-party services.</p>
+                    </div>
+                    <WebhookManager formId={formId} disabled={form.status === "revoked"} />
+                </div>
 
                 {/* Danger Zone */}
                 <Card className="border-destructive/20 bg-destructive/5">

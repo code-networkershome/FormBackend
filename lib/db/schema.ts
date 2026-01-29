@@ -13,6 +13,7 @@ import { relations } from "drizzle-orm";
 // --- ENUMS ---
 export const formStatusEnum = pgEnum("form_status", ["active", "paused", "test_mode", "revoked"]);
 export const submissionStatusEnum = pgEnum("submission_status", ["unread", "read", "spam", "deleted"]);
+export const webhookStatusEnum = pgEnum("webhook_status", ["active", "disabled"]);
 
 // --- TABLES ---
 
@@ -100,17 +101,47 @@ export const submissions = pgTable("submissions", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// API Keys 🔑
+export const apiKeys = pgTable("api_keys", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    keyHash: text("key_hash").notNull().unique(), // Salted hash of the key
+    name: text("name").notNull(), // User-friendly label (e.g., "Production")
+    lastUsedAt: timestamp("last_used_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Webhooks ⚡
+export const webhooks = pgTable("webhooks", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    formId: uuid("form_id").notNull().references(() => forms.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    secret: text("secret").notNull(), // Webhook signing secret
+    status: webhookStatusEnum("status").default("active").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // --- RELATIONS ---
 
 export const usersRelations = relations(users, ({ many }) => ({
     forms: many(forms),
+    apiKeys: many(apiKeys),
 }));
 
 export const formsRelations = relations(forms, ({ one, many }) => ({
     owner: one(users, { fields: [forms.ownerId], references: [users.id] }),
     submissions: many(submissions),
+    webhooks: many(webhooks),
 }));
 
 export const submissionsRelations = relations(submissions, ({ one }) => ({
     form: one(forms, { fields: [submissions.formId], references: [forms.id] }),
+}));
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+    user: one(users, { fields: [apiKeys.userId], references: [users.id] }),
+}));
+
+export const webhooksRelations = relations(webhooks, ({ one }) => ({
+    form: one(forms, { fields: [webhooks.formId], references: [forms.id] }),
 }));
