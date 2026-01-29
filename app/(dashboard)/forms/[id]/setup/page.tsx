@@ -32,11 +32,11 @@ export default function SetupPage() {
   <input type="email" name="email" required placeholder="User Email" />
   <textarea name="message" required placeholder="Your Message"></textarea>
 
+  <button type="submit">Submit</button>
+
   <!-- Optional Configuration -->
-  <input type="hidden" name="_next" value="${baseUrl}/thanks" />
-  <input type="hidden" name="_subject" value="New Submission from Website" />
-  
-  <button type="submit">Send</button>
+  <!-- <input type="hidden" name="_next" value="${baseUrl}/thanks" /> -->
+  <!-- <input type="hidden" name="_subject" value="New Submission" /> -->
 </form>`;
 
     const reactCode = `import { useFormVibe } from "@formvibe/react";

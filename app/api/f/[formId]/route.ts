@@ -140,14 +140,11 @@ export async function POST(
 
         if (!internalResponse.ok) {
             const errorData = await internalResponse.json().catch(() => ({}));
-            console.error("Internal submission failed:", errorData);
             return NextResponse.json({ error: errorData.error || "Submission failed" }, { status: internalResponse.status });
         }
 
         const result = await internalResponse.json();
         const finalRedirect = result.redirectUrl || `${origin}/thanks`;
-
-        console.log(`[Submission] id=${formId} ajax=${isAjax} redirect=${finalRedirect}`);
 
         // 9. Handle Redirection vs AJAX Response
         if (isAjax) {
