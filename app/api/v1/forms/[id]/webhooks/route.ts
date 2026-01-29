@@ -7,14 +7,10 @@ import { crypto } from "node:crypto";
 
 export async function GET(
     _req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await auth();
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = params;
+    const { id } = await params;
 
     const results = await db
         .select({
@@ -35,14 +31,10 @@ export async function GET(
 
 export async function POST(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const session = await auth();
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = params;
+    const { id } = await params;
     const { url } = await req.json();
 
     if (!url) {

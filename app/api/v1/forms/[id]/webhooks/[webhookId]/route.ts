@@ -6,14 +6,10 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
     _req: Request,
-    { params }: { params: { id: string; webhookId: string } }
+    { params }: { params: Promise<{ id: string; webhookId: string }> }
 ) {
     const session = await auth();
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: formId, webhookId } = params;
+    const { id: formId, webhookId } = await params;
 
     const result = await db
         .delete(webhooks)
