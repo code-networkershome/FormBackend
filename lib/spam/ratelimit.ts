@@ -1,19 +1,21 @@
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 
-if (!process.env.UPSTASH_REDIS_URL || !process.env.UPSTASH_REDIS_TOKEN) {
-    throw new Error("Missing Upstash Redis environment variables");
+const redisUrl = process.env.UPSTASH_REDIS_URL;
+const redisToken = process.env.UPSTASH_REDIS_TOKEN;
+
+if (!redisUrl || !redisToken) {
+    console.warn("Spam protection (Redis) is not configured. Rate limiting is disabled.");
 }
 
-export const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_URL,
-    token: process.env.UPSTASH_REDIS_TOKEN,
-});
+export const redis = (redisUrl && redisToken) ? new Redis({
+    url: redisUrl,
+    token: redisToken,
+}) : null;
 
-// Primary rate limiter: 10 requests per 10 seconds per IP
-export const rateLimit = new Ratelimit({
+export const rateLimit = redis ? new Ratelimit({
     redis: redis,
     limiter: Ratelimit.slidingWindow(10, "10 s"),
     analytics: true,
     prefix: "@formvibe/ratelimit",
-});
+}) : null;

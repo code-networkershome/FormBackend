@@ -36,13 +36,15 @@ export async function POST(
 
     // 4. Rate Limiting (IP based)
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
-    const { success: isAllowed } = await rateLimit.limit(`${formId}_${ip}`);
 
-    if (!isAllowed) {
-        return NextResponse.json(
-            { error: "Too many submissions. Please slow down." },
-            { status: 429 }
-        );
+    if (rateLimit) {
+        const { success: isAllowed } = await rateLimit.limit(`${formId}_${ip}`);
+        if (!isAllowed) {
+            return NextResponse.json(
+                { error: "Too many submissions. Please slow down." },
+                { status: 429 }
+            );
+        }
     }
 
     // 5. Parse Payload
@@ -74,42 +76,50 @@ export async function POST(
     const isAjax = acceptHeader.includes("application/json") || payload._format === "json";
 
     // 8. Forward to Internal Serverless Route
-    const internalResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/internal/submit`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "x-vibe-secret": process.env.INTERNAL_API_SECRET!,
-        },
-        body: JSON.stringify({
-            formId,
-            payload,
-            isAjax,
-            metadata: {
-                ip,
-                ua: req.headers.get("user-agent"),
-                geo: req.headers.get("x-vercel-ip-country"),
+    // Fallback to current host if NEXT_PUBLIC_APP_URL is missing
+    const origin = process.env.NEXT_PUBLIC_APP_URL || `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+
+    try {
+        const internalResponse = await fetch(`${origin}/api/internal/submit`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-vibe-secret": process.env.INTERNAL_API_SECRET || "fallback-secret",
             },
-        }),
-    });
+            body: JSON.stringify({
+                formId,
+                payload,
+                isAjax,
+                metadata: {
+                    ip,
+                    ua: req.headers.get("user-agent"),
+                    geo: req.headers.get("x-vercel-ip-country"),
+                },
+            }),
+        });
 
-    if (!internalResponse.ok) {
-        const errorData = await internalResponse.json();
-        return NextResponse.json({ error: errorData.error || "Submission failed" }, { status: internalResponse.status });
+        if (!internalResponse.ok) {
+            const errorData = await internalResponse.json().catch(() => ({}));
+            return NextResponse.json({ error: errorData.error || "Submission failed" }, { status: internalResponse.status });
+        }
+
+        const result = await internalResponse.json();
+
+        // 9. Handle Redirection vs AJAX Response
+        if (isAjax) {
+            return NextResponse.json({ success: true, message: "Submission successful", redirect: result.redirectUrl });
+        }
+
+        if (result.redirectUrl) {
+            return NextResponse.redirect(result.redirectUrl, 303);
+        }
+
+        // Default Success Page
+        return NextResponse.redirect(`${origin}/thanks`, 303);
+    } catch (e: any) {
+        console.error("Submission processing error:", e);
+        return NextResponse.json({ error: "Failed to process submission internally" }, { status: 500 });
     }
-
-    const result = await internalResponse.json();
-
-    // 9. Handle Redirection vs AJAX Response
-    if (isAjax) {
-        return NextResponse.json({ success: true, message: "Submission successful", redirect: result.redirectUrl });
-    }
-
-    if (result.redirectUrl) {
-        return NextResponse.redirect(result.redirectUrl, 303);
-    }
-
-    // Default Success Page
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/thanks`, 303);
 }
 
 // Implement 405 for other methods explicitly if needed
