@@ -157,66 +157,78 @@ export default function FormsListPage() {
                         <div key={i} className="h-48 animate-pulse rounded-2xl bg-slate-100" />
                     ))
                 ) : forms?.length > 0 ? (
-                    forms.map((form: any) => (
-                        <Card key={form.id} className="bg-white border-slate-100 shadow-sm group hover:border-blue-300 transition-colors">
-                            <CardHeader className="flex flex-row items-start justify-between pb-2">
-                                <div className="space-y-1">
-                                    <CardTitle className="text-xl text-slate-900">{form.name}</CardTitle>
-                                    <div className="flex items-center gap-2">
-                                        <span className={cn(
-                                            "h-1.5 w-1.5 rounded-full",
-                                            form.status === "active" ? "bg-emerald-500" : "bg-amber-500"
-                                        )} />
-                                        <span className="text-xs text-slate-500 capitalize">{form.status}</span>
+                    forms
+                        .sort((a: any, b: any) => {
+                            const order: Record<string, number> = { active: 0, paused: 1, test_mode: 2, revoked: 3 };
+                            return (order[a.status] ?? 4) - (order[b.status] ?? 4);
+                        })
+                        .map((form: any) => (
+                            <Card key={form.id} className="bg-white border-slate-100 shadow-sm group hover:border-blue-300 transition-colors">
+                                <CardHeader className="flex flex-row items-start justify-between pb-2">
+                                    <div className="space-y-1">
+                                        <CardTitle className="text-xl text-slate-900">{form.name}</CardTitle>
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn(
+                                                "h-1.5 w-1.5 rounded-full",
+                                                form.status === "active" ? "bg-emerald-500" :
+                                                    form.status === "revoked" ? "bg-slate-400" :
+                                                        "bg-amber-500"
+                                            )} />
+                                            <span className={cn(
+                                                "text-xs capitalize font-medium",
+                                                form.status === "revoked" ? "text-slate-400" : "text-slate-500"
+                                            )}>
+                                                {form.status}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600">
-                                            <MoreVertical className="h-4 w-4" />
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/forms/${form.id}/submissions`} className="gap-2">
+                                                    <Eye className="h-4 w-4" /> View Submissions
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/forms/${form.id}/setup`} className="gap-2">
+                                                    <Code className="h-4 w-4" /> Setup Guide
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/forms/${form.id}/settings`} className="gap-2">
+                                                    <Settings className="h-4 w-4" /> Settings
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem
+                                                className="text-red-500 focus:text-red-600 gap-2"
+                                                onClick={() => handleDelete(form.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" /> Delete Form
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </CardHeader>
+                                <CardContent className="pt-4 flex flex-col gap-3">
+                                    <div className="text-xs text-slate-400">
+                                        Updated {new Date(form.updatedAt).toLocaleDateString()}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" className="flex-1 text-xs border-slate-200 text-slate-600" size="sm" asChild>
+                                            <Link href={`/forms/${form.id}/submissions`}>Data</Link>
                                         </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/forms/${form.id}/submissions`} className="gap-2">
-                                                <Eye className="h-4 w-4" /> View Submissions
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/forms/${form.id}/setup`} className="gap-2">
-                                                <Code className="h-4 w-4" /> Setup Guide
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href={`/forms/${form.id}/settings`} className="gap-2">
-                                                <Settings className="h-4 w-4" /> Settings
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            className="text-red-500 focus:text-red-600 gap-2"
-                                            onClick={() => handleDelete(form.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" /> Delete Form
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </CardHeader>
-                            <CardContent className="pt-4 flex flex-col gap-3">
-                                <div className="text-xs text-slate-400">
-                                    Updated {new Date(form.updatedAt).toLocaleDateString()}
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button variant="outline" className="flex-1 text-xs border-slate-200 text-slate-600" size="sm" asChild>
-                                        <Link href={`/forms/${form.id}/submissions`}>Data</Link>
-                                    </Button>
-                                    <Button variant="outline" className="flex-1 text-xs border-slate-200 text-slate-600" size="sm" asChild>
-                                        <Link href={`/forms/${form.id}/setup`}>Setup</Link>
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))
+                                        <Button variant="outline" className="flex-1 text-xs border-slate-200 text-slate-600" size="sm" asChild>
+                                            <Link href={`/forms/${form.id}/setup`}>Setup</Link>
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))
                 ) : (
                     <div className="col-span-full py-24 text-center space-y-4 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
                         <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50">

@@ -11,7 +11,7 @@ import {
 import { relations } from "drizzle-orm";
 
 // --- ENUMS ---
-export const formStatusEnum = pgEnum("form_status", ["active", "paused", "test_mode"]);
+export const formStatusEnum = pgEnum("form_status", ["active", "paused", "test_mode", "revoked"]);
 export const submissionStatusEnum = pgEnum("submission_status", ["unread", "read", "spam", "deleted"]);
 
 // --- TABLES ---

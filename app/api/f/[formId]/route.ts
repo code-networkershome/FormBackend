@@ -34,6 +34,17 @@ export async function POST(
         );
     }
 
+    // 3. Status Check (Fail Fast)
+    if (form.status === "revoked") {
+        return NextResponse.json(
+            {
+                error: "This form has been revoked and is no longer accepting submissions.",
+                code: "FORM_REVOKED"
+            },
+            { status: 403 }
+        );
+    }
+
     // 4. Rate Limiting (IP based)
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
 

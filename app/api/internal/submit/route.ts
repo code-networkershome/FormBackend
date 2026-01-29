@@ -26,7 +26,14 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Form not found" }, { status: 404 });
         }
 
-        // 3. Status Handling (CRITICAL: No persistence if paused)
+        // 3. Status Handling (CRITICAL: No persistence if paused or revoked)
+        if (form.status === "revoked") {
+            return NextResponse.json({
+                error: "This form has been revoked and is no longer accepting submissions.",
+                code: "FORM_REVOKED"
+            }, { status: 403 });
+        }
+
         if (form.status === "paused") {
             return NextResponse.json({
                 error: "This form is currently paused and not accepting submissions."
