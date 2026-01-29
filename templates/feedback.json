@@ -1,0 +1,27 @@
+{
+    "id": "feedback",
+    "version": 1,
+    "category": "General",
+    "display_name": "Customer Feedback",
+    "description": "Gather insights and ratings from your users to improve your product or service.",
+    "suggested_fields": [
+        {
+            "name": "rating",
+            "type": "radio",
+            "label": "Service Rating",
+            "required": true
+        },
+        {
+            "name": "feedback",
+            "type": "textarea",
+            "label": "Your Feedback",
+            "required": true
+        }
+    ],
+    "example_html": "<form action=\"{{ENDPOINT}}\" method=\"POST\" class=\"space-y-4\">\n  <p class=\"font-bold text-sm\">How would you rate our service?</p>\n  <div class=\"flex gap-4\">\n    <label><input type=\"radio\" name=\"rating\" value=\"1\" /> 1</label>\n    <label><input type=\"radio\" name=\"rating\" value=\"2\" /> 2</label>\n    <label><input type=\"radio\" name=\"rating\" value=\"3\" /> 3</label>\n    <label><input type=\"radio\" name=\"rating\" value=\"4\" /> 4</label>\n    <label><input type=\"radio\" name=\"rating\" value=\"5\" /> 5</label>\n  </div>\n  <textarea name=\"feedback\" placeholder=\"What can we improve?\" required class=\"w-full rounded-lg border border-slate-200 px-4 py-2 h-32\"></textarea>\n  <button type=\"submit\" class=\"bg-blue-600 text-white px-6 py-2 rounded-lg font-bold\">Submit Feedback</button>\n</form>",
+    "example_fetch": "fetch(\"{{ENDPOINT}}\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\", \"Accept\": \"application/json\" },\n  body: JSON.stringify({\n    rating: \"5\",\n    feedback: \"Amazing experience, very fast!\"\n  })\n}).then(res => res.json());",
+    "default_settings": {
+        "success_url": "",
+        "subject": "New Customer Feedback"
+    }
+}

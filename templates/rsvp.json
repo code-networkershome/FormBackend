@@ -1,0 +1,39 @@
+{
+    "id": "rsvp",
+    "version": 1,
+    "category": "Events",
+    "display_name": "Event RSVP",
+    "description": "Manage guest lists for webinars, meetups, and parties with ease.",
+    "suggested_fields": [
+        {
+            "name": "guest_name",
+            "type": "text",
+            "label": "Full Name",
+            "required": true
+        },
+        {
+            "name": "guest_email",
+            "type": "email",
+            "label": "Email Address",
+            "required": true
+        },
+        {
+            "name": "attending",
+            "type": "select",
+            "label": "Will you attend?",
+            "required": true
+        },
+        {
+            "name": "dietary",
+            "type": "textarea",
+            "label": "Dietary Requirements",
+            "required": false
+        }
+    ],
+    "example_html": "<form action=\"{{ENDPOINT}}\" method=\"POST\" class=\"space-y-4\">\n  <input type=\"text\" name=\"guest_name\" placeholder=\"Full Name\" required class=\"w-full rounded-lg border px-4 py-2\" />\n  <input type=\"email\" name=\"guest_email\" placeholder=\"Email\" required class=\"w-full rounded-lg border px-4 py-2\" />\n  <select name=\"attending\" class=\"w-full rounded-lg border px-4 py-2\">\n    <option value=\"yes\">Yes, I'm coming!</option>\n    <option value=\"no\">Sorry, can't make it</option>\n  </select>\n  <textarea name=\"dietary\" placeholder=\"Dietary requirements (optional)\" class=\"w-full rounded-lg border px-4 py-2\"></textarea>\n  <button type=\"submit\" class=\"bg-blue-600 text-white px-6 py-2 rounded-lg font-bold\">RSVP</button>\n</form>",
+    "example_fetch": "fetch(\"{{ENDPOINT}}\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\", \"Accept\": \"application/json\" },\n  body: JSON.stringify({\n    guest_name: \"Alice Smith\",\n    guest_email: \"alice@example.com\",\n    attending: \"yes\",\n    dietary: \"None\"\n  })\n}).then(res => res.json());",
+    "default_settings": {
+        "success_url": "",
+        "subject": "New RSVP Received"
+    }
+}

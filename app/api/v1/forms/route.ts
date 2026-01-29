@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { forms } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { getTemplateById } from "@/lib/constants";
 
 export async function GET() {
     const session = await auth();
@@ -62,12 +63,20 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Name is required" }, { status: 400 });
         }
 
+        // Fetch template defaults if applicable
+        const template = getTemplateById(templateId);
+        const defaultSettings = template?.default_settings || {};
+
         const [newForm] = await db
             .insert(forms)
             .values({
                 name,
                 ownerId: session.user.id,
                 templateId: templateId || null,
+                settings: {
+                    ...defaultSettings,
+                    email_notifications: true, // Enable by default for better UX
+                }
             })
             .returning();
 

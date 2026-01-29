@@ -1,0 +1,21 @@
+{
+    "id": "newsletter",
+    "version": 1,
+    "category": "Marketing",
+    "display_name": "Newsletter Signup",
+    "description": "Grow your email list with a clean and focused signup form.",
+    "suggested_fields": [
+        {
+            "name": "subscriber_email",
+            "type": "email",
+            "label": "Subscriber Email",
+            "required": true
+        }
+    ],
+    "example_html": "<form action=\"{{ENDPOINT}}\" method=\"POST\" class=\"flex gap-2\">\n  <input type=\"email\" name=\"subscriber_email\" placeholder=\"you@example.com\" required class=\"flex-1 rounded-lg border border-slate-200 px-4 py-2\" />\n  <button type=\"submit\" class=\"bg-blue-600 text-white px-6 py-2 rounded-lg font-bold whitespace-nowrap\">Join Now</button>\n</form>",
+    "example_fetch": "fetch(\"{{ENDPOINT}}\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\", \"Accept\": \"application/json\" },\n  body: JSON.stringify({\n    subscriber_email: \"new-user@example.com\"\n  })\n}).then(res => res.json());",
+    "default_settings": {
+        "success_url": "",
+        "subject": "New Newsletter Subscriber"
+    }
+}

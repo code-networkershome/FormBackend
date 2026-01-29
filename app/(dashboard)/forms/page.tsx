@@ -27,11 +27,17 @@ import {
 } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 
+import { TEMPLATES } from "@/lib/constants";
+
 export default function DashboardPage() {
     const { data: stats, error: statsError } = useSWR("/api/v1/analytics", fetcher);
     const { data: forms, error: formsError, mutate } = useSWR("/api/v1/forms", fetcher);
+
     const [isCreating, setIsCreating] = useState(false);
     const [newFormName, setNewFormName] = useState("");
+    const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     const router = useRouter();
 
     const handleCreate = async () => {
@@ -40,7 +46,10 @@ export default function DashboardPage() {
         const res = await fetch("/api/v1/forms", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: newFormName }),
+            body: JSON.stringify({
+                name: newFormName,
+                templateId: selectedTemplate
+            }),
         });
         const data = await res.json();
         setIsCreating(false);
@@ -50,6 +59,7 @@ export default function DashboardPage() {
             return;
         }
 
+        setIsDialogOpen(false);
         mutate();
         router.push(`/forms/${data.id}/setup`);
     };
@@ -67,42 +77,99 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-display text-3xl font-bold tracking-tight">Overview</h1>
-                    <p className="text-muted-foreground">Welcome back! Here's how your forms are performing.</p>
+                    <p className="text-muted-foreground">Welcome back! Here&apos;s how your forms are performing.</p>
                 </div>
 
-                <Dialog>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                         <Button variant="premium" className="gap-2">
                             <PlusCircle className="h-4 w-4" />
                             New Form
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Create New Form</DialogTitle>
                             <DialogDescription>
-                                Give your form a name to get started. You can change this later.
+                                Start with a template or a blank form. You can always customize it later.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="py-4">
-                            <input
-                                autoFocus
-                                type="text"
-                                placeholder="e.g. Contact Form"
-                                className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                                value={newFormName}
-                                onChange={(e) => setNewFormName(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                            />
+
+                        <div className="space-y-6 py-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold uppercase tracking-widest text-slate-400">Step 1: Form Name</label>
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder="e.g. Website Contact"
+                                    className="w-full rounded-2xl border border-slate-200 bg-white px-6 py-3 focus:ring-2 focus:ring-blue-600 focus:outline-none transition-all shadow-sm"
+                                    value={newFormName}
+                                    onChange={(e) => setNewFormName(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-sm font-bold uppercase tracking-widest text-slate-400">Step 2: Choose a Starting Point</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => setSelectedTemplate(null)}
+                                        className={cn(
+                                            "flex flex-col items-start p-4 rounded-3xl border-2 transition-all text-left group",
+                                            selectedTemplate === null
+                                                ? "border-blue-600 bg-blue-50/50 shadow-md"
+                                                : "border-slate-100 bg-white hover:border-slate-200"
+                                        )}
+                                    >
+                                        <div className="h-10 w-10 rounded-2xl bg-slate-100 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                            <FileText className="h-5 w-5 text-slate-600" />
+                                        </div>
+                                        <h4 className="font-bold text-slate-900 text-sm">Blank Form</h4>
+                                        <p className="text-xs text-slate-500 mt-1">Start from scratch with no pre-sets.</p>
+                                    </button>
+
+                                    {TEMPLATES.map((template) => (
+                                        <button
+                                            key={template.id}
+                                            onClick={() => setSelectedTemplate(template.id)}
+                                            className={cn(
+                                                "flex flex-col items-start p-4 rounded-3xl border-2 transition-all text-left group relative overflow-hidden",
+                                                selectedTemplate === template.id
+                                                    ? "border-blue-600 bg-blue-50/50 shadow-md"
+                                                    : "border-slate-100 bg-white hover:border-slate-200"
+                                            )}
+                                        >
+                                            <div className="h-10 w-10 rounded-2xl bg-blue-50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                                <template.icon className="h-5 w-5 text-blue-600" />
+                                            </div>
+                                            <h4 className="font-bold text-slate-900 text-sm">{template.display_name}</h4>
+                                            <p className="text-xs text-slate-500 mt-1 leading-tight">{template.description}</p>
+
+                                            {template.suggested_fields.length > 0 && (
+                                                <div className="mt-4 flex flex-wrap gap-1 opacity-60">
+                                                    {template.suggested_fields.map(f => (
+                                                        <span key={f.name} className="text-[10px] bg-white border border-slate-100 px-1.5 py-0.5 rounded-full font-medium">
+                                                            {f.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-medium italic">
+                                    * These are suggested fields. FormVibe accepts any data you send at runtime.
+                                </p>
+                            </div>
                         </div>
+
                         <DialogFooter>
                             <Button
                                 variant="premium"
-                                className="w-full"
+                                className="w-full h-12 rounded-2xl shadow-lg shadow-blue-600/20"
                                 onClick={handleCreate}
                                 disabled={isCreating || !newFormName}
                             >
-                                {isCreating ? "Creating..." : "Create Form"}
+                                {isCreating ? "Creating..." : "Create and Get Started"}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

@@ -18,37 +18,59 @@ export default function SetupPage() {
     const baseUrl = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || "https://formvibe.com");
     const endpointUrl = `${baseUrl}/api/f/${formId}`;
 
-    // Get template code if exists, else default simple form
-    const template = form?.templateId ? TEMPLATES.find(t => t.id === form.templateId) : null;
+    // Get template code if exists from our metadata
+    const template = form?.templateId ? getTemplateById(form.templateId) : null;
+
+    const renderSnippet = (snippet: string) => {
+        return snippet.replace(/\{\{ENDPOINT\}\}/g, endpointUrl);
+    };
 
     const htmlCode = template
-        ? template.html(endpointUrl)
+        ? renderSnippet(template.example_html)
         : `<form action="${endpointUrl}" method="POST">
-  <input type="email" name="email" required />
-  <textarea name="message" required></textarea>
+  <!-- Required for identifier -->
+  <input type="email" name="email" required placeholder="User Email" />
+  <textarea name="message" required placeholder="Your Message"></textarea>
+
+  <!-- Optional Configuration -->
+  <input type="hidden" name="_next" value="${baseUrl}/thanks" />
+  <input type="hidden" name="_subject" value="New Submission from Website" />
+  
   <button type="submit">Send</button>
 </form>`;
 
     const reactCode = `import { useFormVibe } from "@formvibe/react";
 
-function ContactForm() {
+function SampleForm() {
   const { submit, loading } = useFormVibe({
     formId: "${formId}"
   });
 
   return (
     <form onSubmit={submit}>
-      <input name="email" type="email" />
+      <input name="email" type="email" placeholder="email@example.com" />
       <button disabled={loading}>Submit</button>
     </form>
   );
 }`;
 
-    const fetchCode = `fetch("${endpointUrl}", {
+    const fetchCode = template
+        ? renderSnippet(template.example_fetch)
+        : `fetch("${endpointUrl}", {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email: "user@example.com", message: "Hello!" })
-}).then(res => res.json());`;
+  headers: { 
+    "Content-Type": "application/json",
+    "Accept": "application/json" 
+  },
+  body: JSON.stringify({ 
+    email: "user@example.com", 
+    message: "Hello!",
+    _subject: "Custom AJAX Subject"
+  })
+})
+.then(res => res.json())
+.then(data => console.log(data))
+.catch(err => console.error(err));`;
 
     return (
         <div className="max-w-5xl mx-auto space-y-12 pb-24">

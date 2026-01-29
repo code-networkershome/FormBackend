@@ -1,0 +1,33 @@
+{
+    "id": "contact",
+    "version": 1,
+    "category": "General",
+    "display_name": "Simple Contact Form",
+    "description": "The essential contact form for any website. Perfect for 'Contact Us' pages.",
+    "suggested_fields": [
+        {
+            "name": "name",
+            "type": "text",
+            "label": "Full Name",
+            "required": true
+        },
+        {
+            "name": "email",
+            "type": "email",
+            "label": "Email Address",
+            "required": true
+        },
+        {
+            "name": "message",
+            "type": "textarea",
+            "label": "Message",
+            "required": true
+        }
+    ],
+    "example_html": "<form action=\"{{ENDPOINT}}\" method=\"POST\" class=\"space-y-4\">\n  <div>\n    <label class=\"block text-sm font-medium mb-1\">Name</label>\n    <input type=\"text\" name=\"name\" required class=\"w-full rounded-lg border border-slate-200 px-4 py-2\" />\n  </div>\n  <div>\n    <label class=\"block text-sm font-medium mb-1\">Email</label>\n    <input type=\"email\" name=\"email\" required class=\"w-full rounded-lg border border-slate-200 px-4 py-2\" />\n  </div>\n  <div>\n    <label class=\"block text-sm font-medium mb-1\">Message</label>\n    <textarea name=\"message\" required class=\"w-full rounded-lg border border-slate-200 px-4 py-2 h-32\"></textarea>\n  </div>\n  <button type=\"submit\" class=\"bg-blue-600 text-white px-6 py-2 rounded-lg font-bold\">Send Message</button>\n</form>",
+    "example_fetch": "fetch(\"{{ENDPOINT}}\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\", \"Accept\": \"application/json\" },\n  body: JSON.stringify({\n    name: \"John Doe\",\n    email: \"john@example.com\",\n    message: \"Hello from FormVibe!\"\n  })\n}).then(res => res.json());",
+    "default_settings": {
+        "success_url": "",
+        "subject": "New Contact Form Submission"
+    }
+}
