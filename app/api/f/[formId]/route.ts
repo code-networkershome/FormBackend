@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { forms } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-export const runtime = "edge";
+// submission route uses standard nodejs runtime to ensure DB driver compatibility
 
 const MAX_PAYLOAD_SIZE = 64 * 1024; // 64KB
 
@@ -37,12 +37,28 @@ export async function POST(
         );
     }
 
-    // 3. Fetch Form Status (Fail Fast)
-    const [form] = await db
-        .select({ status: forms.status })
-        .from(forms)
-        .where(eq(forms.id, formId))
-        .limit(1);
+    // 3. Validation & Status Check (Fail Fast)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(formId)) {
+        return NextResponse.json({ error: "Invalid form ID format" }, { status: 400 });
+    }
+
+    let form;
+    try {
+        const [result] = await db
+            .select({ status: forms.status })
+            .from(forms)
+            .where(eq(forms.id, formId))
+            .limit(1);
+        form = result;
+    } catch (e: any) {
+        console.error("DB check failed in edge route:", e);
+        // If DB fails, we proceed unless we specifically want to fail. 
+        // For security, if DB is down, we might want to reject, but for availability, we might skip.
+        // Given this is a status check for "revoked", we should probably fail safe (allow if DB check fails?)
+        // Actually, if DB is down, internal forward will fail too.
+        return NextResponse.json({ error: "Database connection failed" }, { status: 520 });
+    }
 
     if (!form) {
         return NextResponse.json({ error: "Form not found" }, { status: 404 });
