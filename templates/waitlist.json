@@ -1,0 +1,33 @@
+{
+    "id": "waitlist",
+    "version": 1,
+    "category": "Lead Gen",
+    "display_name": "Product Waitlist",
+    "description": "Capture emails and interest for your upcoming product launch or beta program.",
+    "suggested_fields": [
+        {
+            "name": "email",
+            "type": "email",
+            "label": "Email Address",
+            "required": true
+        },
+        {
+            "name": "role",
+            "type": "text",
+            "label": "Your Role (e.g. Designer, Developer)",
+            "required": false
+        },
+        {
+            "name": "company_size",
+            "type": "text",
+            "label": "Company Size",
+            "required": false
+        }
+    ],
+    "example_html": "<form action=\"{{ENDPOINT}}\" method=\"POST\" class=\"max-w-md mx-auto\">\n  <div class=\"flex flex-col gap-4 p-6 rounded-2xl bg-white border border-slate-100 shadow-sm\">\n    <h3 class=\"text-lg font-bold\">Join the Waitlist</h3>\n    <p class=\"text-sm text-slate-500\">Be the first to know when we launch.</p>\n    <input type=\"email\" name=\"email\" required placeholder=\"email@example.com\" class=\"w-full rounded-lg border border-slate-200 px-4 py-2\" />\n    <input type=\"text\" name=\"role\" placeholder=\"What's your role?\" class=\"w-full rounded-lg border border-slate-200 px-4 py-2\" />\n    <button type=\"submit\" class=\"w-full bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors\">Join Now</button>\n  </div>\n</form>",
+    "example_fetch": "fetch(\"{{ENDPOINT}}\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\", \"Accept\": \"application/json\" },\n  body: JSON.stringify({\n    email: \"founder@startup.io\",\n    role: \"CTO\"\n  })\n}).then(res => res.json());",
+    "default_settings": {
+        "success_url": "/thanks-waitlist",
+        "subject": "New Waitlist Signup"
+    }
+}

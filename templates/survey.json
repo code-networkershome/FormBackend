@@ -1,0 +1,39 @@
+{
+    "id": "survey",
+    "version": 1,
+    "category": "Market Research",
+    "display_name": "Product Survey",
+    "description": "Gather detailed insights about your product or service from your target audience.",
+    "suggested_fields": [
+        {
+            "name": "full_name",
+            "type": "text",
+            "label": "Full Name",
+            "required": true
+        },
+        {
+            "name": "usage_frequency",
+            "type": "select",
+            "label": "How often do you use our product?",
+            "required": true
+        },
+        {
+            "name": "primary_feature",
+            "type": "text",
+            "label": "What is your favorite feature?",
+            "required": false
+        },
+        {
+            "name": "improvement_suggestions",
+            "type": "textarea",
+            "label": "Any suggestions for improvement?",
+            "required": false
+        }
+    ],
+    "example_html": "<form action=\"{{ENDPOINT}}\" method=\"POST\" class=\"space-y-4\">\n  <div>\n    <label class=\"block text-sm font-medium mb-1\">Full Name</label>\n    <input type=\"text\" name=\"full_name\" required class=\"w-full rounded-lg border border-slate-200 px-4 py-2\" />\n  </div>\n  <div>\n    <label class=\"block text-sm font-medium mb-1\">How often do you use our product?</label>\n    <select name=\"usage_frequency\" required class=\"w-full rounded-lg border border-slate-200 px-4 py-2\">\n      <option value=\"daily\">Daily</option>\n      <option value=\"weekly\">Weekly</option>\n      <option value=\"monthly\">Monthly</option>\n      <option value=\"rarely\">Rarely</option>\n    </select>\n  </div>\n  <div>\n    <label class=\"block text-sm font-medium mb-1\">What is your favorite feature?</label>\n    <input type=\"text\" name=\"primary_feature\" class=\"w-full rounded-lg border border-slate-200 px-4 py-2\" />\n  </div>\n  <div>\n    <label class=\"block text-sm font-medium mb-1\">Any suggestions for improvement?</label>\n    <textarea name=\"improvement_suggestions\" class=\"w-full rounded-lg border border-slate-200 px-4 py-2 h-24\"></textarea>\n  </div>\n  <button type=\"submit\" class=\"bg-blue-600 text-white px-6 py-2 rounded-lg font-bold\">Submit Survey</button>\n</form>",
+    "example_fetch": "fetch(\"{{ENDPOINT}}\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\", \"Accept\": \"application/json\" },\n  body: JSON.stringify({\n    full_name: \"Jane Smith\",\n    usage_frequency: \"weekly\",\n    primary_feature: \"Fast endpoints\",\n    improvement_suggestions: \"More templates!\"\n  })\n}).then(res => res.json());",
+    "default_settings": {
+        "success_url": "",
+        "subject": "New Product Survey Result"
+    }
+}

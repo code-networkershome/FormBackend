@@ -107,36 +107,36 @@ export default function FormsListPage() {
 
                             <div className="space-y-3">
                                 <label className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Choose a Template (Optional)</label>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-3 gap-3">
                                     <button
                                         onClick={() => setSelectedTemplate(null)}
                                         className={cn(
-                                            "flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all text-sm font-medium",
+                                            "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all text-[11px] font-bold uppercase tracking-wider",
                                             selectedTemplate === null
                                                 ? "border-blue-600 bg-blue-50 text-blue-600 shadow-sm"
                                                 : "border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200"
                                         )}
                                     >
-                                        <div className="h-8 w-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-                                            <PlusCircle className="h-4 w-4" />
+                                        <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                                            <PlusCircle className="h-5 w-5" />
                                         </div>
-                                        Blank Form
+                                        Blank
                                     </button>
                                     {TEMPLATES.map((t) => (
                                         <button
                                             key={t.id}
                                             onClick={() => setSelectedTemplate(t.id)}
                                             className={cn(
-                                                "flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all text-sm font-medium",
+                                                "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all text-[11px] font-bold uppercase tracking-wider",
                                                 selectedTemplate === t.id
                                                     ? "border-blue-600 bg-blue-50 text-blue-600 shadow-sm"
                                                     : "border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200"
                                             )}
                                         >
-                                            <div className="h-8 w-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-                                                <t.icon className="h-4 w-4" />
+                                            <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                                                <t.icon className="h-5 w-5" />
                                             </div>
-                                            {t.display_name.split(' ')[0]} {/* Show first word for brevity */}
+                                            {t.display_name.split(' ')[0]}
                                         </button>
                                     ))}
                                 </div>

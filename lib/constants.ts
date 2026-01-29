@@ -4,6 +4,8 @@ import contactTemplate from "../templates/contact.json";
 import feedbackTemplate from "../templates/feedback.json";
 import rsvpTemplate from "../templates/rsvp.json";
 import newsletterTemplate from "../templates/newsletter.json";
+import surveyTemplate from "../templates/survey.json";
+import waitlistTemplate from "../templates/waitlist.json";
 
 export interface TemplateField {
   name: string;
@@ -44,6 +46,14 @@ export const TEMPLATES: TemplateDefinition[] = [
   {
     ...newsletterTemplate,
     icon: UserPlus
+  },
+  {
+    ...surveyTemplate,
+    icon: MessageSquare
+  },
+  {
+    ...waitlistTemplate,
+    icon: Calendar
   }
 ];
 
