@@ -113,7 +113,12 @@ function SampleForm() {
                     <div key={i} className="relative group">
                         <div className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all duration-300">
                             <div className="flex justify-between items-start mb-4">
-                                <span className="text-4xl font-black text-slate-50 opacity-10 group-hover:opacity-20 transition-opacity">{s.step}</span>
+                                <span
+                                    className="text-4xl font-black transition-all duration-300 pointer-events-none opacity-40"
+                                    style={{ WebkitTextStroke: '1px #0f172a', color: '#e2e8f0' }}
+                                >
+                                    {s.step}
+                                </span>
                                 <div className={`h-12 w-12 rounded-2xl bg-${s.color}-50 text-${s.color}-600 flex items-center justify-center transition-transform group-hover:scale-110`}>
                                     <s.icon className="h-6 w-6" />
                                 </div>

@@ -316,7 +316,10 @@ export default function LandingPage() {
                   variants={fadeIn}
                   className="relative group p-8 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all"
                 >
-                  <div className="text-6xl font-black text-slate-50 absolute right-6 top-6 transition-colors group-hover:text-blue-50">
+                  <div
+                    className="text-6xl font-black absolute right-6 top-6 transition-all duration-300 pointer-events-none opacity-50"
+                    style={{ WebkitTextStroke: '1px #0f172a', color: '#e2e8f0' }}
+                  >
                     {item.step}
                   </div>
                   <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
