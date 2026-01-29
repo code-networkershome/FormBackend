@@ -163,7 +163,12 @@ export async function POST(
 }
 
 // Implement 405 for other methods explicitly if needed
-export async function GET() { return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 }); }
+export async function GET() {
+    return NextResponse.json({
+        error: "Method Not Allowed",
+        message: "This endpoint is for POST submissions only. Please check your form's 'action' attribute."
+    }, { status: 405 });
+}
 export async function PUT() { return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 }); }
 export async function DELETE() { return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 }); }
 
