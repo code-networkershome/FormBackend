@@ -19,6 +19,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
