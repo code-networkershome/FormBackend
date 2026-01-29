@@ -57,6 +57,8 @@ export async function POST(req: NextRequest) {
         // Order of precedence: _next field > form settings > null
         const redirectUrl = specialFields._next || form.settings?.success_url || null;
 
+        console.log(`[Internal Submit] formId=${formId} success_url=${form.settings?.success_url} finalRedirect=${redirectUrl}`);
+
         // 6. Save Submission (Persistence)
         const enrichedMetadata = {
             ...metadata,

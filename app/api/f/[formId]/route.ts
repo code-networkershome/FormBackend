@@ -140,22 +140,30 @@ export async function POST(
 
         if (!internalResponse.ok) {
             const errorData = await internalResponse.json().catch(() => ({}));
+            console.error("Internal submission failed:", errorData);
             return NextResponse.json({ error: errorData.error || "Submission failed" }, { status: internalResponse.status });
         }
 
         const result = await internalResponse.json();
+        const finalRedirect = result.redirectUrl || `${origin}/thanks`;
+
+        console.log(`[Submission] id=${formId} ajax=${isAjax} redirect=${finalRedirect}`);
 
         // 9. Handle Redirection vs AJAX Response
         if (isAjax) {
-            return NextResponse.json({ success: true, message: "Submission successful", redirect: result.redirectUrl });
+            return NextResponse.json({
+                success: true,
+                message: "Submission successful",
+                redirect: finalRedirect
+            });
         }
 
-        if (result.redirectUrl) {
-            return NextResponse.redirect(result.redirectUrl, 303);
+        try {
+            return NextResponse.redirect(new URL(finalRedirect, origin), 303);
+        } catch (urlErr) {
+            console.error("Malformed redirect URL, falling back to /thanks:", finalRedirect);
+            return NextResponse.redirect(new URL("/thanks", origin), 303);
         }
-
-        // Default Success Page
-        return NextResponse.redirect(`${origin}/thanks`, 303);
     } catch (e: any) {
         console.error("Submission processing error:", e);
         return NextResponse.json({ error: "Failed to process submission internally" }, { status: 500 });
