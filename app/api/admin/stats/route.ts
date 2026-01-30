@@ -32,32 +32,31 @@ export async function GET(req: Request) {
             .where(gte(submissions.createdAt, startDate));
 
         // 3. Submissions by Day (for charts)
-        // Ensure we handle empty sets gracefully
-        const dailySubmissionsResults = await db.execute(sql`
-            SELECT 
-                DATE_TRUNC('day', created_at)::text as date,
-                COUNT(*)::int as count
-            FROM submissions
-            WHERE created_at >= ${startDate}
-            GROUP BY 1
-            ORDER BY 1 ASC
-        `);
+        const dailySubmissionsResults = await db
+            .select({
+                date: sql<string>`DATE_TRUNC('day', ${submissions.createdAt})::text`,
+                count: sql<number>`count(*)::int`,
+            })
+            .from(submissions)
+            .where(gte(submissions.createdAt, startDate))
+            .groupBy(sql`DATE_TRUNC('day', ${submissions.createdAt})`)
+            .orderBy(sql`1 ASC`);
 
         // 4. Top Users by Submission Volume
-        const topUsersQuery = await db.execute(sql`
-            SELECT 
-                u.id, 
-                u.name, 
-                u.email,
-                COUNT(s.id)::int as submission_count
-            FROM users u
-            LEFT JOIN forms f ON f.owner_id = u.id
-            LEFT JOIN submissions s ON s.form_id = f.id
-            WHERE (s.created_at >= ${startDate} OR s.id IS NULL)
-            GROUP BY u.id, u.name, u.email
-            ORDER BY submission_count DESC
-            LIMIT 5
-        `);
+        const topUsersQuery = await db
+            .select({
+                id: users.id,
+                name: users.name,
+                email: users.email,
+                submissionCount: sql<number>`count(${submissions.id})::int`,
+            })
+            .from(users)
+            .leftJoin(forms, eq(forms.ownerId, users.id))
+            .leftJoin(submissions, eq(submissions.formId, forms.id))
+            .where(sql`${submissions.createdAt} >= ${startDate} OR ${submissions.id} IS NULL`)
+            .groupBy(users.id, users.name, users.email)
+            .orderBy(sql`4 DESC`)
+            .limit(5);
 
         return NextResponse.json({
             summary: {
