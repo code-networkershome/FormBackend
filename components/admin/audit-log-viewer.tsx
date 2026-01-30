@@ -11,8 +11,11 @@ import {
     ChevronLeft,
     ChevronRight,
     Loader2,
-    Info
+    Info,
+    Search
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Input } from "@/components/ui/input";
 import {
     Table,
     TableBody,
@@ -26,15 +29,17 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export function AuditLogViewer() {
+    const searchParams = useSearchParams();
     const [logs, setLogs] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState<any>(null);
+    const [search, setSearch] = useState(searchParams.get("search") || "");
 
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/admin/audit-logs?page=${page}&limit=10`);
+            const res = await fetch(`/api/admin/audit-logs?page=${page}&limit=10&search=${search}`);
             const data = await res.json();
             if (res.ok) {
                 setLogs(data.data || []);
@@ -49,6 +54,14 @@ export function AuditLogViewer() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPage(1);
+            fetchLogs();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
 
     useEffect(() => {
         fetchLogs();
@@ -68,6 +81,19 @@ export function AuditLogViewer() {
             <div>
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Audit Logs</h1>
                 <p className="text-slate-500">A transparent record of all administrative actions on the platform.</p>
+            </div>
+
+            <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                        placeholder="Search logs by action or target..."
+                        className="pl-9 bg-white border-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+                {loading && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
