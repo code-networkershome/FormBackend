@@ -32,24 +32,24 @@ export async function GET(req: Request) {
             .where(gte(submissions.createdAt, startDate));
 
         // 3. Submissions by Day (for charts)
-        // Note: Using raw SQL for date truncation to remain performant on indexed createdAt
-        const dailySubmissions = await db.execute(sql`
+        // Ensure we handle empty sets gracefully
+        const dailySubmissionsResults = await db.execute(sql`
             SELECT 
-                DATE_TRUNC('day', created_at) as date,
-                COUNT(*) as count
+                DATE_TRUNC('day', created_at)::text as date,
+                COUNT(*)::int as count
             FROM submissions
             WHERE created_at >= ${startDate}
             GROUP BY 1
             ORDER BY 1 ASC
         `);
 
-        // 4. Top Users by Submission Volume (Using LEFT JOIN to show users even with 0 subs)
-        const topUsers = await db.execute(sql`
+        // 4. Top Users by Submission Volume
+        const topUsersQuery = await db.execute(sql`
             SELECT 
                 u.id, 
                 u.name, 
                 u.email,
-                COUNT(s.id) as submission_count
+                COUNT(s.id)::int as submission_count
             FROM users u
             LEFT JOIN forms f ON f.owner_id = u.id
             LEFT JOIN submissions s ON s.form_id = f.id
@@ -61,16 +61,16 @@ export async function GET(req: Request) {
 
         return NextResponse.json({
             summary: {
-                totalUsers: userCount.value,
-                totalForms: formCount.value,
-                totalSubmissions: submissionCount.value,
-                totalApiKeys: apiKeyCount.value,
-                submissionsInRange: submissionsInRange.value,
+                totalUsers: userCount?.value || 0,
+                totalForms: formCount?.value || 0,
+                totalSubmissions: submissionCount?.value || 0,
+                totalApiKeys: apiKeyCount?.value || 0,
+                submissionsInRange: submissionsInRange?.value || 0,
             },
             charts: {
-                dailySubmissions: dailySubmissions as any,
+                dailySubmissions: dailySubmissionsResults || [],
             },
-            topUsers: topUsers as any,
+            topUsers: topUsersQuery || [],
         });
     } catch (err: any) {
         console.error("CRITICAL: Failed to fetch admin stats:", err);
