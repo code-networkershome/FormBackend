@@ -12,7 +12,9 @@ import {
     Calendar,
     ChevronLeft,
     ChevronRight,
-    Loader2
+    Loader2,
+    FileText,
+    Key
 } from "lucide-react";
 import {
     Table,
