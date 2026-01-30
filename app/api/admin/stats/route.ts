@@ -31,7 +31,7 @@ export async function GET(req: Request) {
             .from(submissions)
             .where(gte(submissions.createdAt, startDate));
 
-        // 3. Submissions by Day (for charts)
+        // 3. Submissions by Day (Simplified)
         const dailySubmissionsResults = await db
             .select({
                 date: sql<string>`DATE_TRUNC('day', ${submissions.createdAt})::text`,
@@ -39,23 +39,24 @@ export async function GET(req: Request) {
             })
             .from(submissions)
             .where(gte(submissions.createdAt, startDate))
-            .groupBy(sql`DATE_TRUNC('day', ${submissions.createdAt})`)
+            .groupBy(sql`1`)
             .orderBy(sql`1 ASC`);
 
-        // 4. Top Users by Submission Volume
+        // 4. Top Users (Simplified Join)
+        // We order by the count result directly
+        const subCount = sql<number>`count(${submissions.id})::int`;
         const topUsersQuery = await db
             .select({
                 id: users.id,
                 name: users.name,
                 email: users.email,
-                submissionCount: sql<number>`count(${submissions.id})::int`,
+                submissionCount: subCount,
             })
             .from(users)
             .leftJoin(forms, eq(forms.ownerId, users.id))
             .leftJoin(submissions, eq(submissions.formId, forms.id))
-            .where(sql`${submissions.createdAt} >= ${startDate} OR ${submissions.id} IS NULL`)
             .groupBy(users.id, users.name, users.email)
-            .orderBy(sql`4 DESC`)
+            .orderBy(sql`${subCount} DESC`)
             .limit(5);
 
         return NextResponse.json({
