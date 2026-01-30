@@ -72,8 +72,12 @@ export async function GET(req: Request) {
             },
             topUsers: topUsers as any,
         });
-    } catch (err) {
-        console.error("Failed to fetch admin stats:", err);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    } catch (err: any) {
+        console.error("CRITICAL: Failed to fetch admin stats:", err);
+        return NextResponse.json({
+            error: "Internal Server Error",
+            message: err.message,
+            stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+        }, { status: 500 });
     }
 }
