@@ -4,17 +4,26 @@ import { submissions } from "@/lib/db/schema";
 import { checkPermission } from "@/lib/auth/permissions";
 import { and, eq, lt, desc, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { validateApiKey } from "@/lib/auth/api-key";
 
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const session = await auth();
+    let session: any = await auth();
     const { id: formId } = await params;
     const { searchParams } = new URL(req.url);
 
+    // Support API Key Authentication
+    if (!session) {
+        const apiKeySession = await validateApiKey(req.headers.get("Authorization"));
+        if (apiKeySession) {
+            session = apiKeySession;
+        }
+    }
+
     if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Unauthorized", code: "API_KEY_INVALID" }, { status: 401 });
     }
 
     const isOwner = await checkPermission(session.user.id, formId);
@@ -61,11 +70,19 @@ export async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
-    const session = await auth();
+    let session: any = await auth();
     const { id: formId } = await params;
 
+    // Support API Key Authentication
+    if (!session) {
+        const apiKeySession = await validateApiKey(req.headers.get("Authorization"));
+        if (apiKeySession) {
+            session = apiKeySession;
+        }
+    }
+
     if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Unauthorized", code: "API_KEY_INVALID" }, { status: 401 });
     }
 
     const isOwner = await checkPermission(session.user.id, formId);

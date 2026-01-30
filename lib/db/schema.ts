@@ -14,6 +14,8 @@ import { relations } from "drizzle-orm";
 export const formStatusEnum = pgEnum("form_status", ["active", "paused", "test_mode", "revoked"]);
 export const submissionStatusEnum = pgEnum("submission_status", ["unread", "read", "spam", "deleted"]);
 export const webhookStatusEnum = pgEnum("webhook_status", ["active", "disabled"]);
+export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
+export const userStatusEnum = pgEnum("user_status", ["active", "blocked"]);
 
 // --- TABLES ---
 
@@ -24,6 +26,8 @@ export const users = pgTable("users", {
     email: text("email").notNull().unique(),
     emailVerified: timestamp("emailVerified", { mode: "date" }),
     image: text("image"),
+    role: userRoleEnum("role").default("user").notNull(),
+    status: userStatusEnum("status").default("active").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -107,6 +111,7 @@ export const apiKeys = pgTable("api_keys", {
     userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     keyHash: text("key_hash").notNull().unique(), // Salted hash of the key
     name: text("name").notNull(), // User-friendly label (e.g., "Production")
+    status: text("status").default("active").notNull(), // 'active', 'revoked'
     lastUsedAt: timestamp("last_used_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -144,4 +149,19 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
 
 export const webhooksRelations = relations(webhooks, ({ one }) => ({
     form: one(forms, { fields: [webhooks.formId], references: [forms.id] }),
+}));
+
+// Admin Audit Logs 🛡️
+export const adminAuditLogs = pgTable("admin_audit_logs", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    adminUserId: uuid("admin_user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    targetType: text("target_type").notNull(), // 'user', 'api_key', 'form'
+    targetId: text("target_id").notNull(),
+    metadata: jsonb("metadata").default({}),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const adminAuditLogsRelations = relations(adminAuditLogs, ({ one }) => ({
+    admin: one(users, { fields: [adminAuditLogs.adminUserId], references: [users.id] }),
 }));

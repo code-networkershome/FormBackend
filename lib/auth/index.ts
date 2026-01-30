@@ -5,6 +5,7 @@ import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { accounts, sessions, users, verificationTokens, userCredentials } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: DrizzleAdapter(db, {
@@ -53,6 +54,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                     throw new Error("EMAIL_NOT_VERIFIED");
                 }
 
+                // 5. Check Blocked Status
+                if (user.status === "blocked") {
+                    throw new Error("USER_BLOCKED");
+                }
+
                 return user;
             }
         })
@@ -64,15 +70,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         strategy: "jwt",
     },
     callbacks: {
+        async signIn({ user }) {
+            if (!user.email) return false;
+
+            const dbUser = await db.query.users.findFirst({
+                where: eq(users.email, user.email)
+            });
+
+            if (dbUser?.status === "blocked") return false;
+            return true;
+        },
         async jwt({ token, user }) {
             if (user) {
                 token.id = user.id;
+                token.role = (user as any).role;
+                token.status = (user as any).status;
             }
             return token;
         },
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
+                (session.user as any).role = token.role as string;
+                (session.user as any).status = token.status as string;
             }
             return session;
         },
