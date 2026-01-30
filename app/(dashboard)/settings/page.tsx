@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { ShieldCheck, Mail, Database } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ApiKeyManager } from "@/components/dashboard/api-key-manager";
+import { ApiQuickstart } from "@/components/dashboard/api-quickstart";
 
 export default async function GlobalSettingsPage() {
     const session = await auth();
@@ -75,10 +76,11 @@ export default async function GlobalSettingsPage() {
                 {/* API & Developer Section */}
                 <div id="developer">
                     <div className="mb-6">
-                        <h2 className="text-2xl font-bold text-slate-900">Developer Settings</h2>
+                        <h2 className="text-2xl font-bold text-slate-900">Developer Tools (Advanced)</h2>
                         <p className="text-slate-500">Advanced tools for platform integration and automation.</p>
                     </div>
                     <ApiKeyManager />
+                    <ApiQuickstart />
                 </div>
             </div>
         </div>
