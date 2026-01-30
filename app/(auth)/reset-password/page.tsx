@@ -78,7 +78,7 @@ function ResetPasswordForm() {
                     </p>
                 </div>
                 <Button variant="outline" className="w-full" asChild>
-                    <Link href="/auth/forgot-password">Request New Link</Link>
+                    <Link href="/forgot-password">Request New Link</Link>
                 </Button>
             </div>
         );

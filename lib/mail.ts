@@ -1,6 +1,6 @@
 export async function sendPasswordResetEmail(email: string, token: string) {
     const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const resetLink = `${baseUrl}/auth/reset-password?token=${token}`;
+    const resetLink = `${baseUrl}/reset-password?token=${token}`;
 
     const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
