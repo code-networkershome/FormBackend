@@ -1,4 +1,3 @@
-import { crypto } from "node:crypto";
 
 const PREFIX = "fv_";
 const KEY_LENGTH = 32;

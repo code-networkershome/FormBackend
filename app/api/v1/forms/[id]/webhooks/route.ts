@@ -3,7 +3,6 @@ import { db } from "@/lib/db";
 import { webhooks, forms } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { crypto } from "node:crypto";
 
 export async function GET(
     _req: Request,
