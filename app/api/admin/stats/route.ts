@@ -75,9 +75,10 @@ export async function GET(req: Request) {
     } catch (err: any) {
         console.error("CRITICAL: Failed to fetch admin stats:", err);
         return NextResponse.json({
-            error: "Internal Server Error",
+            error: "Database Query Failed",
             message: err.message,
-            stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+            code: err.code || "UNKNOWN_ERROR",
+            detail: err.detail || "No additional DB details"
         }, { status: 500 });
     }
 }
