@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { apiKeys, users } from "@/lib/db/schema";
-import { desc, eq, count } from "drizzle-orm";
+import { desc, eq, count, ilike } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth/admin";
 
@@ -9,13 +9,17 @@ export async function GET(req: Request) {
     if (error) return error;
 
     const { searchParams } = new URL(req.url);
+    const search = searchParams.get("search") || "";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
     const offset = (page - 1) * limit;
 
+    const where = search ? ilike(apiKeys.name, `%${search}%`) : undefined;
+
     try {
         // 1. Fetch Keys with User details
         const keys = await db.query.apiKeys.findMany({
+            where,
             orderBy: [desc(apiKeys.createdAt)],
             limit: limit,
             offset: offset,
@@ -32,7 +36,8 @@ export async function GET(req: Request) {
         // 2. Total Count for Pagination
         const [totalCount] = await db
             .select({ value: count() })
-            .from(apiKeys);
+            .from(apiKeys)
+            .where(where);
 
         return NextResponse.json({
             data: keys,

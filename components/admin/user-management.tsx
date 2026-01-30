@@ -34,13 +34,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export function UserManagement() {
     const { data: session } = useSession();
+    const searchParams = useSearchParams();
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(searchParams.get("search") || "");
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState<any>(null);
     const [updating, setUpdating] = useState<string | null>(null);

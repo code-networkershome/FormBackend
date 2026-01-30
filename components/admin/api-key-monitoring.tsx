@@ -13,8 +13,11 @@ import {
     ChevronLeft,
     ChevronRight,
     Loader2,
-    Clock
+    Clock,
+    History,
+    Search
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
     Table,
     TableBody,
@@ -41,6 +44,7 @@ export function ApiKeyMonitoring() {
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState<any>(null);
     const [updating, setUpdating] = useState<string | null>(null);
+    const router = useRouter();
 
     const fetchKeys = async () => {
         setLoading(true);
@@ -178,8 +182,12 @@ export function ApiKeyMonitoring() {
                                                     <ShieldAlert className="h-4 w-4 mr-2" /> Revoke Key
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem>View Usage History</DropdownMenuItem>
-                                                <DropdownMenuItem>View Owner Profile</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => router.push(`/admin/audit-logs?search=${encodeURIComponent(key.name)}`)}>
+                                                    <History className="h-4 w-4 mr-2" /> View Usage History
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => router.push(`/admin/users?search=${encodeURIComponent(key.user?.email || "")}`)}>
+                                                    <User className="h-4 w-4 mr-2" /> View Owner Profile
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
