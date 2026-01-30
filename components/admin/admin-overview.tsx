@@ -30,7 +30,7 @@ export function AdminOverview() {
                     setStats(data);
                     setError(null);
                 } else {
-                    setError(data.error || "Failed to fetch platform statistics");
+                    setError(data.message || data.error || "Failed to fetch platform statistics");
                 }
             } catch (err) {
                 setError("Network error: Could not connect to administration API");
