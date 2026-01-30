@@ -47,8 +47,13 @@ export function ApiKeyMonitoring() {
         try {
             const res = await fetch(`/api/admin/api-keys?page=${page}&limit=10`);
             const data = await res.json();
-            setKeys(data.data);
-            setMeta(data.meta);
+            if (res.ok) {
+                setKeys(data.data || []);
+                setMeta(data.meta);
+            } else {
+                console.error("API Error:", data.error);
+                setKeys([]);
+            }
         } catch (err) {
             console.error("Failed to fetch api keys:", err);
         } finally {

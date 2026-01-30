@@ -36,8 +36,13 @@ export function AuditLogViewer() {
         try {
             const res = await fetch(`/api/admin/audit-logs?page=${page}&limit=10`);
             const data = await res.json();
-            setLogs(data.data);
-            setMeta(data.meta);
+            if (res.ok) {
+                setLogs(data.data || []);
+                setMeta(data.meta);
+            } else {
+                console.error("API Error:", data.error);
+                setLogs([]);
+            }
         } catch (err) {
             console.error("Failed to fetch audit logs:", err);
         } finally {

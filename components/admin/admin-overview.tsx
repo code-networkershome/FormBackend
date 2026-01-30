@@ -25,7 +25,11 @@ export function AdminOverview() {
             try {
                 const res = await fetch(`/api/admin/stats?range=${range}`);
                 const data = await res.json();
-                setStats(data);
+                if (res.ok) {
+                    setStats(data);
+                } else {
+                    console.error("API Error:", data.error);
+                }
             } catch (err) {
                 console.error("Failed to fetch stats:", err);
             } finally {
@@ -57,8 +61,8 @@ export function AdminOverview() {
                             key={r}
                             onClick={() => setRange(r)}
                             className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${range === r
-                                    ? "bg-slate-900 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                                ? "bg-slate-900 text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                                 }`}
                         >
                             Last {r.replace("d", "")} Days

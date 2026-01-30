@@ -50,8 +50,13 @@ export function UserManagement() {
         try {
             const res = await fetch(`/api/admin/users?page=${page}&limit=10&search=${search}`);
             const data = await res.json();
-            setUsers(data.data);
-            setMeta(data.meta);
+            if (res.ok) {
+                setUsers(data.data || []);
+                setMeta(data.meta);
+            } else {
+                console.error("API Error:", data.error);
+                setUsers([]);
+            }
         } catch (err) {
             console.error("Failed to fetch users:", err);
         } finally {
