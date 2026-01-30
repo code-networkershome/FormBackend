@@ -10,13 +10,15 @@ import {
     ShieldAlert,
     LogOut,
     SquareStack,
-    ArrowLeft
+    ArrowLeft,
+    FileText
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const adminNavigation = [
     { name: "Overview", href: "/admin", icon: BarChart3, exact: true },
     { name: "User Management", href: "/admin/users", icon: Users },
+    { name: "Global Forms", href: "/admin/forms", icon: FileText },
     { name: "Global API Keys", href: "/admin/api-keys", icon: Key },
     { name: "Audit Logs", href: "/admin/audit-logs", icon: ShieldAlert },
 ];

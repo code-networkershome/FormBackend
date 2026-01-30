@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { apiKeys, users } from "@/lib/db/schema";
+import { forms, users } from "@/lib/db/schema";
 import { desc, eq, count, ilike, or, and, exists } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth/admin";
@@ -15,23 +15,22 @@ export async function GET(req: Request) {
     const offset = (page - 1) * limit;
 
     const where = search ? or(
-        ilike(apiKeys.name, `%${search}%`),
+        ilike(forms.name, `%${search}%`),
         exists(
             db.select()
                 .from(users)
-                .where(and(eq(users.id, apiKeys.userId), ilike(users.email, `%${search}%`)))
+                .where(and(eq(users.id, forms.ownerId), ilike(users.email, `%${search}%`)))
         )
     ) : undefined;
 
     try {
-        // 1. Fetch Keys with User details
-        const keys = await db.query.apiKeys.findMany({
+        const data = await db.query.forms.findMany({
             where,
-            orderBy: [desc(apiKeys.createdAt)],
+            orderBy: [desc(forms.createdAt)],
             limit: limit,
             offset: offset,
             with: {
-                user: {
+                owner: {
                     columns: {
                         name: true,
                         email: true,
@@ -40,14 +39,13 @@ export async function GET(req: Request) {
             }
         });
 
-        // 2. Total Count for Pagination
         const [totalCount] = await db
             .select({ value: count() })
-            .from(apiKeys)
+            .from(forms)
             .where(where);
 
         return NextResponse.json({
-            data: keys,
+            data,
             meta: {
                 total: totalCount.value,
                 page,
@@ -56,7 +54,7 @@ export async function GET(req: Request) {
             }
         });
     } catch (err) {
-        console.error("Failed to fetch admin api keys:", err);
+        console.error("Failed to fetch admin forms:", err);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

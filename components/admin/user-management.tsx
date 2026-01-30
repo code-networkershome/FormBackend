@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export function UserManagement() {
@@ -46,6 +46,7 @@ export function UserManagement() {
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState<any>(null);
     const [updating, setUpdating] = useState<string | null>(null);
+    const router = useRouter();
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -205,8 +206,12 @@ export function UserManagement() {
                                                 </DropdownMenuItem>
                                             )}
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem>View Forms</DropdownMenuItem>
-                                            <DropdownMenuItem>View API Usage</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => router.push(`/admin/forms?search=${encodeURIComponent(user.email)}`)}>
+                                                <FileText className="h-4 w-4 mr-2" /> View Forms
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => router.push(`/admin/api-keys?search=${encodeURIComponent(user.email)}`)}>
+                                                <Key className="h-4 w-4 mr-2" /> View API Usage
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>
