@@ -122,8 +122,8 @@ export function FormsManagement() {
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant="outline" className="bg-slate-50 text-slate-600 font-mono">
-                                        N/A
+                                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-mono">
+                                        {form.submissionCount || 0}
                                     </Badge>
                                 </TableCell>
                                 <TableCell>
@@ -145,7 +145,7 @@ export function FormsManagement() {
                                             <DropdownMenuItem onClick={() => router.push(`/admin/users?search=${encodeURIComponent(form.owner?.email || "")}`)}>
                                                 <User className="h-4 w-4 mr-2" /> View Owner Profile
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => router.push(`/forms/${form.id}/submissions`)}>
                                                 <FileText className="h-4 w-4 mr-2" /> View Responses
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>

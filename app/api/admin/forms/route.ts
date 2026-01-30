@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
-import { forms, users } from "@/lib/db/schema";
-import { desc, eq, count, ilike, or, and, exists } from "drizzle-orm";
+import { forms, users, submissions } from "@/lib/db/schema";
+import { desc, eq, count, ilike, or, and, exists, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { verifyAdmin } from "@/lib/auth/admin";
 
@@ -24,20 +24,24 @@ export async function GET(req: Request) {
     ) : undefined;
 
     try {
-        const data = await db.query.forms.findMany({
-            where,
-            orderBy: [desc(forms.createdAt)],
-            limit: limit,
-            offset: offset,
-            with: {
+        const data = await db
+            .select({
+                id: forms.id,
+                name: forms.name,
+                status: forms.status,
+                createdAt: forms.createdAt,
+                submissionCount: sql<number>`(SELECT count(*) FROM ${submissions} WHERE ${submissions.formId} = ${forms.id})`.mapWith(Number),
                 owner: {
-                    columns: {
-                        name: true,
-                        email: true,
-                    }
+                    name: users.name,
+                    email: users.email,
                 }
-            }
-        });
+            })
+            .from(forms)
+            .innerJoin(users, eq(forms.ownerId, users.id))
+            .where(where)
+            .orderBy(desc(forms.createdAt))
+            .limit(limit)
+            .offset(offset);
 
         const [totalCount] = await db
             .select({ value: count() })
