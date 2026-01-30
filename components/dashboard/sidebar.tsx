@@ -9,7 +9,8 @@ import {
     Settings,
     PlusCircle,
     LogOut,
-    SquareStack
+    SquareStack,
+    ShieldCheck
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -19,7 +20,7 @@ const navigation = [
     { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+export function Sidebar({ role }: { role?: string }) {
     const pathname = usePathname();
 
     return (
@@ -50,6 +51,18 @@ export function Sidebar() {
                         </Link>
                     );
                 })}
+
+                {role === "admin" && (
+                    <Link
+                        href="/admin"
+                        className={cn(
+                            "group mt-4 flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-all bg-slate-900 text-white shadow-lg hover:bg-slate-800"
+                        )}
+                    >
+                        <ShieldCheck className="mr-3 h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                        Admin Dashboard
+                    </Link>
+                )}
             </nav>
 
             <div className="border-t border-slate-200 p-4">

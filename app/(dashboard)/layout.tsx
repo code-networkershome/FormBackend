@@ -15,7 +15,7 @@ export default async function DashboardLayout({
 
     return (
         <div className="flex h-screen bg-background text-foreground">
-            <Sidebar />
+            <Sidebar role={(session.user as any).role} />
             <main className="flex-1 overflow-y-auto bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background">
                 <div className="mx-auto max-w-7xl px-8 py-8">
                     {children}
