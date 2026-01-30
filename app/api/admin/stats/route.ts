@@ -43,7 +43,7 @@ export async function GET(req: Request) {
             ORDER BY 1 ASC
         `);
 
-        // 4. Top Users by Submission Volume
+        // 4. Top Users by Submission Volume (Using LEFT JOIN to show users even with 0 subs)
         const topUsers = await db.execute(sql`
             SELECT 
                 u.id, 
@@ -51,10 +51,10 @@ export async function GET(req: Request) {
                 u.email,
                 COUNT(s.id) as submission_count
             FROM users u
-            JOIN forms f ON f.owner_id = u.id
-            JOIN submissions s ON s.form_id = f.id
-            WHERE s.created_at >= ${startDate}
-            GROUP BY u.id
+            LEFT JOIN forms f ON f.owner_id = u.id
+            LEFT JOIN submissions s ON s.form_id = f.id
+            WHERE (s.created_at >= ${startDate} OR s.id IS NULL)
+            GROUP BY u.id, u.name, u.email
             ORDER BY submission_count DESC
             LIMIT 5
         `);

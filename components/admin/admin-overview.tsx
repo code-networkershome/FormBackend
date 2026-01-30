@@ -18,6 +18,7 @@ export function AdminOverview() {
     const [stats, setStats] = useState<any>(null);
     const [range, setRange] = useState("7d");
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -27,11 +28,12 @@ export function AdminOverview() {
                 const data = await res.json();
                 if (res.ok) {
                     setStats(data);
+                    setError(null);
                 } else {
-                    console.error("API Error:", data.error);
+                    setError(data.error || "Failed to fetch platform statistics");
                 }
             } catch (err) {
-                console.error("Failed to fetch stats:", err);
+                setError("Network error: Could not connect to administration API");
             } finally {
                 setLoading(false);
             }
@@ -41,11 +43,23 @@ export function AdminOverview() {
 
     if (loading && !stats) return <div className="p-8 text-slate-500 animate-pulse">Loading dashboard statistics...</div>;
 
+    if (error) {
+        return (
+            <div className="p-8 bg-rose-50 border border-rose-100 rounded-xl text-rose-600">
+                <h3 className="font-bold flex items-center gap-2 mb-2">
+                    <Activity className="h-5 w-5" />
+                    Database Sync Required
+                </h3>
+                <p className="text-sm opacity-90">{error}</p>
+            </div>
+        );
+    }
+
     const summaryItems = [
-        { label: "Total Users", value: stats?.summary?.totalUsers, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-        { label: "Total Forms", value: stats?.summary?.totalForms, icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50" },
-        { label: "Total Submissions", value: stats?.summary?.totalSubmissions, icon: BarChart, color: "text-purple-600", bg: "bg-purple-50" },
-        { label: "Active API Keys", value: stats?.summary?.totalApiKeys, icon: Key, color: "text-amber-600", bg: "bg-amber-50" },
+        { label: "Total Users", value: stats?.summary?.totalUsers ?? 0, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+        { label: "Total Forms", value: stats?.summary?.totalForms ?? 0, icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50" },
+        { label: "Total Submissions", value: stats?.summary?.totalSubmissions ?? 0, icon: BarChart, color: "text-purple-600", bg: "bg-purple-50" },
+        { label: "Active API Keys", value: stats?.summary?.totalApiKeys ?? 0, icon: Key, color: "text-amber-600", bg: "bg-amber-50" },
     ];
 
     return (
