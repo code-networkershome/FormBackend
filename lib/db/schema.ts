@@ -7,6 +7,7 @@ import {
     pgEnum,
     primaryKey,
     integer,
+    index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -126,11 +127,23 @@ export const webhooks = pgTable("webhooks", {
     createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Password Reset Tokens 🔑
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+    index("expires_at_idx").on(table.expiresAt),
+]);
+
 // --- RELATIONS ---
 
 export const usersRelations = relations(users, ({ many }) => ({
     forms: many(forms),
     apiKeys: many(apiKeys),
+    passwordResetTokens: many(passwordResetTokens),
 }));
 
 export const formsRelations = relations(forms, ({ one, many }) => ({
@@ -164,4 +177,8 @@ export const adminAuditLogs = pgTable("admin_audit_logs", {
 
 export const adminAuditLogsRelations = relations(adminAuditLogs, ({ one }) => ({
     admin: one(users, { fields: [adminAuditLogs.adminUserId], references: [users.id] }),
+}));
+
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+    user: one(users, { fields: [passwordResetTokens.userId], references: [users.id] }),
 }));

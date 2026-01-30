@@ -147,6 +147,14 @@ export default function LoginPage() {
                                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                                 />
                                             </div>
+                                            <div className="flex justify-end mt-1">
+                                                <Link
+                                                    href="/auth/forgot-password"
+                                                    className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors"
+                                                >
+                                                    Forgot Password?
+                                                </Link>
+                                            </div>
                                         </div>
                                         <Button className="w-full" disabled={isLoading}>
                                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -15,6 +15,13 @@
       "when": 1769688357543,
       "tag": "0001_phase8_infrastructure",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769773106613,
+      "tag": "0002_chief_cyclops",
+      "breakpoints": true
     }
   ]
 }
